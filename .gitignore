@@ -2,7 +2,7 @@
 /.idea/*
 /target/
 
-nbproject/private/
+nbproject/
 build/
 nbbuild/
 dist/
