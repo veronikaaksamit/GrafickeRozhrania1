@@ -378,13 +378,13 @@ public class ProjectOpenGL {
 
         //creating material
         Material mat = new Material(new Vector3f(0.33f, 0.22f, 0.03f), new Vector3f(0.78f, 0.57f, 0.11f), new Vector3f(0.99f, 0.94f, 0.81f), 27.90f);
-        drawModel(new Matrix4f().translate(0, -5, -5), view.rotate(t, 0f, 1f, 0f), projection, ballerinaArray, ballerina.getTriangleCount() * 3, mat);
+        drawModel(new Matrix4f().translate(0, -5, -5).rotate(t, 0f, 1f, 0f), view.rotate(t, 0f, 1f, 0f), projection, ballerinaArray, ballerina.getTriangleCount() * 3, mat);
 
         Material mat2 = new Material(new Vector3f(0.21f, 0.13f, 0.05f), new Vector3f(0.71f, 0.43f, 0.18f), new Vector3f(0.39f, 0.27f, 0.17f), 25.6f);
-        drawModel(new Matrix4f().translate(-5, -5, 0), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, mat2);
+        drawModel(new Matrix4f().translate(-5, -5, 0).rotate(-30, 0f, 1f, 0f).rotate(t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, mat2);
 
         Material mat3 = new Material(new Vector3f(0.25f), new Vector3f(0.4f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
-        drawModel(new Matrix4f().translate(5, -5, 0), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, mat3);
+        drawModel(new Matrix4f().translate(5, -5, 0).rotate(30, 0f, 1f, 0f).rotate(t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, mat3);
     }
 
     private void drawModel(Matrix4f model, Matrix4f view, Matrix4f projection, int vao, int count) {
