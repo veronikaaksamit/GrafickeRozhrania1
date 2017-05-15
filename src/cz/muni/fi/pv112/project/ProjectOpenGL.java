@@ -27,23 +27,6 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class ProjectOpenGL {
-
-    //private static final int SIZEOF_AXES_VERTEX = 6 * Float.BYTES;
-    //private static final int COLOR_OFFSET = 3 * Float.BYTES;
-
-//    private static final float AXES[] = {
-//        // .. position .......... color ....
-//        // x axis
-//        1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-//        0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-//        // y axis
-//        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-//        0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-//        // z axis
-//        0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-//        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f
-//    };
-
     private static final int SIZEOF_MODEL_VERTEX = 6 * Float.BYTES;
     private static final int NORMAL_OFFSET = 3 * Float.BYTES;
 
@@ -66,18 +49,13 @@ public class ProjectOpenGL {
 
     // model
     private ObjLoader ballerina;
+    private ObjLoader scene;
 
     // our OpenGL resources
-    //private int axesBuffer;
+    private int sceneBuffer;
     private int ballerinaBuffer;
-    //private int axesArray;
+    private int sceneArray;
     private int ballerinaArray;
-
-    // our GLSL resources
-//    private int axesProgram;
-//    private int axesAspectUniformLoc;
-//    private int axesLengthUniformLoc;
-//    private int axesMvpUniformLoc;
 
     private int modelProgram;
     private int modelMvpUniformLoc;
@@ -244,20 +222,12 @@ public class ProjectOpenGL {
 
         // load GLSL program (vertex and fragment shaders)
         try {
-//            axesProgram = loadProgram("/resources/shaders/axes.vs.glsl",
-//                    "/resources/shaders/axes.fs.glsl");
             modelProgram = loadProgram("/resources/shaders/model.vs.glsl",
                     "/resources/shaders/model.fs.glsl");
         } catch (IOException ex) {
             Logger.getLogger(ProjectOpenGL.class.getName()).log(Level.SEVERE, null, ex);
             System.exit(1);
         }
-
-        // get uniform locations
-        // axes program uniforms
-//        axesAspectUniformLoc = glGetUniformLocation(axesProgram, "aspect");
-//        axesLengthUniformLoc = glGetUniformLocation(axesProgram, "len");
-//        axesMvpUniformLoc = glGetUniformLocation(axesProgram, "MVP");
 
         // model program uniforms
         modelMvpUniformLoc = glGetUniformLocation(modelProgram, "MVP");
@@ -282,21 +252,21 @@ public class ProjectOpenGL {
         // create buffers with geometry
         int[] buffers = new int[2];
         glGenBuffers(buffers);
-        //axesBuffer = buffers[0];
+        sceneBuffer = buffers[0];
         ballerinaBuffer = buffers[1];
 
-       // fill a buffers with geometry
-//        glBindBuffer(GL_ARRAY_BUFFER, axesBuffer);
-//        glBufferData(GL_ARRAY_BUFFER, AXES, GL_STATIC_DRAW);
 
         // load ballerina and fill buffer with ballerina data
         ballerina = new ObjLoader("/resources/models/ballerina.obj");
+        scene = new ObjLoader("/resources/models/scene.obj");
         try {
             ballerina.load();
+            scene.load();
         } catch (IOException ex) {
             Logger.getLogger(ProjectOpenGL.class.getName()).log(Level.SEVERE, null, ex);
             System.exit(1);
         }
+        
         int length = 3 * 6 * ballerina.getTriangleCount();
         FloatBuffer ballerina = BufferUtils.createFloatBuffer(length);
         for (int f = 0; f < this.ballerina.getTriangleCount(); f++) {
@@ -315,16 +285,35 @@ public class ProjectOpenGL {
 
         // clear buffer binding, so that other code doesn't presume it (easier error detection)
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+        
+        
+        length = 3 * 6 * scene.getTriangleCount();
+        FloatBuffer scene = BufferUtils.createFloatBuffer(length);
+        for (int f = 0; f < this.scene.getTriangleCount(); f++) {
+            int[] pi = this.scene.getVertexIndices().get(f);
+            int[] ni = this.scene.getNormalIndices().get(f);
+            for (int i = 0; i < 3; i++) {
+                float[] position = this.scene.getVertices().get(pi[i]);
+                float[] normal = this.scene.getNormals().get(ni[i]);
+                scene.put(position);
+                scene.put(normal);
+            }
+        }
+        scene.rewind();
+        glBindBuffer(GL_ARRAY_BUFFER, sceneBuffer);
+        glBufferData(GL_ARRAY_BUFFER, scene, GL_STATIC_DRAW);
+
+        // clear buffer binding, so that other code doesn't presume it (easier error detection)
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // create a vertex array object for the geometry
         int[] arrays = new int[2];
         glGenVertexArrays(arrays);
-        //axesArray = arrays[0];
+        sceneArray = arrays[0];
         ballerinaArray = arrays[1];
 
         int positionAttribLoc;
         int colorAttribLoc;
-        // get axes program attributes
 //        int positionAttribLoc = glGetAttribLocation(axesProgram, "position");
 //        int colorAttribLoc = glGetAttribLocation(axesProgram, "color");
 //        // bind axes buffer
@@ -343,6 +332,14 @@ public class ProjectOpenGL {
         // bind ballerina buffer
         glBindVertexArray(ballerinaArray);
         glBindBuffer(GL_ARRAY_BUFFER, ballerinaBuffer);
+        glEnableVertexAttribArray(positionAttribLoc);
+        glVertexAttribPointer(positionAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, 0);
+        glEnableVertexAttribArray(normalAttribLoc);
+        glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, NORMAL_OFFSET);
+        
+        // bind ballerina buffer
+        glBindVertexArray(sceneArray);
+        glBindBuffer(GL_ARRAY_BUFFER, sceneBuffer);
         glEnableVertexAttribArray(positionAttribLoc);
         glVertexAttribPointer(positionAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, 0);
         glEnableVertexAttribArray(normalAttribLoc);
@@ -376,6 +373,9 @@ public class ProjectOpenGL {
         Matrix4f view = new Matrix4f()
                 .lookAt(camera.getEyePosition(), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0));
 
+        
+        Material mat4 = new Material(new Vector3f(0.25f), new Vector3f(0.15f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
+        drawModel(new Matrix4f().translate(0, -15, -5).scale(6f), view, projection, sceneArray, scene.getTriangleCount() * 3, mat4);
         //creating material
         Material mat = new Material(new Vector3f(0.33f, 0.22f, 0.03f), new Vector3f(0.78f, 0.57f, 0.11f), new Vector3f(0.99f, 0.94f, 0.81f), 27.90f);
         drawModel(new Matrix4f().translate(0, -5, -5).rotate(t, 0f, 1f, 0f), view.rotate(t, 0f, 1f, 0f), projection, ballerinaArray, ballerina.getTriangleCount() * 3, mat);
@@ -385,8 +385,10 @@ public class ProjectOpenGL {
 
         Material mat3 = new Material(new Vector3f(0.25f), new Vector3f(0.4f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
         drawModel(new Matrix4f().translate(5, -5, 0).rotate(30, 0f, 1f, 0f).rotate(t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, mat3);
+        
+    
+        
     }
-
     private void drawModel(Matrix4f model, Matrix4f view, Matrix4f projection, int vao, int count) {
         drawModel(model, view, projection, vao, count, null);
     }

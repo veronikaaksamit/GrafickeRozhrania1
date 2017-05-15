@@ -59,7 +59,7 @@ public class Camera {
     public Camera() {
         directon = 0.0f;
         elevation = 0.0f;
-        distance = 10.0f;
+        distance = 30.0f;
         lastX = 0;
         lastY = 0;
         rotating = false;
