@@ -47,15 +47,20 @@ public class ProjectOpenGL {
     // rendering mode
     private int mode = GL_FILL;
 
-    // model
+    // models
     private ObjLoader ballerina;
     private ObjLoader scene;
+    private ObjLoader seat;
 
-    // our OpenGL resources
-    private int sceneBuffer;
+    // Buffers and arrays for models
     private int ballerinaBuffer;
-    private int sceneArray;
+    private int sceneBuffer;
+    private int seatBuffer;
+    
     private int ballerinaArray;
+    private int sceneArray;
+    private int seatArray;
+    
 
     private int modelProgram;
     private int modelMvpUniformLoc;
@@ -80,31 +85,26 @@ public class ProjectOpenGL {
 
     public void run() {
         System.out.println("Version of LWJGL is: " + Version.getVersion() + "!");
-
         camera = new Camera();
-
         initGLFW();
         loop();
-
+        
         // Free the window callbacks and destroy the window
         glfwFreeCallbacks(window);
         glfwDestroyWindow(window);
-
         // Terminate GLFW and free the error callback
         glfwTerminate();
         glfwSetErrorCallback(null).free();
     }
 
     private void initGLFW() {
-        // Setup an error callback. The default implementation
-        // will print the error message in System.err.
+        // Setup an error callback. Print the error message in System.err.
         GLFWErrorCallback.createPrint(System.err).set();
 
         // Initialize GLFW. Most GLFW functions will not work before doing this.
         if (!glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
-
 
         // set initial width and height
         width = 640;
@@ -193,9 +193,8 @@ public class ProjectOpenGL {
         // Make the window visible
         glfwShowWindow(window);
 
-        // LWJGL detects the context that is current in the current thread,
-        // creates the GLCapabilities instance and makes the OpenGL
-        // bindings available for use.
+        // LWJGL detects the current context in the current thread,
+        // creates the GLCapabilities instance and makes the OpenGL bindings available for use.
         GL.createCapabilities();
     }
 
@@ -250,18 +249,21 @@ public class ProjectOpenGL {
         materialShininessLoc = glGetUniformLocation(modelProgram, "materialShininess");
 
         // create buffers with geometry
-        int[] buffers = new int[2];
+        int[] buffers = new int[3];
         glGenBuffers(buffers);
         sceneBuffer = buffers[0];
         ballerinaBuffer = buffers[1];
+        seatBuffer = buffers[2];
 
 
         // load ballerina and fill buffer with ballerina data
         ballerina = new ObjLoader("/resources/models/ballerina.obj");
         scene = new ObjLoader("/resources/models/scene.obj");
+        seat = new ObjLoader("/resources/models/UV_modely/box.obj");
         try {
             ballerina.load();
             scene.load();
+            seat.load();
         } catch (IOException ex) {
             Logger.getLogger(ProjectOpenGL.class.getName()).log(Level.SEVERE, null, ex);
             System.exit(1);
@@ -302,28 +304,36 @@ public class ProjectOpenGL {
         scene.rewind();
         glBindBuffer(GL_ARRAY_BUFFER, sceneBuffer);
         glBufferData(GL_ARRAY_BUFFER, scene, GL_STATIC_DRAW);
-
-        // clear buffer binding, so that other code doesn't presume it (easier error detection)
+        // clear buffer binding
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        
+        length = 3 * 6 * seat.getTriangleCount();
+        FloatBuffer seat = BufferUtils.createFloatBuffer(length);
+        for (int f = 0; f < this.seat.getTriangleCount(); f++) {
+            int[] pi = this.seat.getVertexIndices().get(f);
+            int[] ni = this.seat.getNormalIndices().get(f);
+            for (int i = 0; i < 3; i++) {
+                float[] position = this.seat.getVertices().get(pi[i]);
+                float[] normal = this.seat.getNormals().get(ni[i]);
+                seat.put(position);
+                seat.put(normal);
+            }
+        }
+        seat.rewind();
+        glBindBuffer(GL_ARRAY_BUFFER, seatBuffer);
+        glBufferData(GL_ARRAY_BUFFER, seat, GL_STATIC_DRAW);
+        // clear buffer binding
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // create a vertex array object for the geometry
-        int[] arrays = new int[2];
+        int[] arrays = new int[3];
         glGenVertexArrays(arrays);
         sceneArray = arrays[0];
         ballerinaArray = arrays[1];
+        seatArray = arrays[2];
 
         int positionAttribLoc;
         int colorAttribLoc;
-//        int positionAttribLoc = glGetAttribLocation(axesProgram, "position");
-//        int colorAttribLoc = glGetAttribLocation(axesProgram, "color");
-//        // bind axes buffer
-//        glBindVertexArray(axesArray);
-//        glBindBuffer(GL_ARRAY_BUFFER, axesBuffer);
-        // stride and offset are employed as both position and color data reside in the same vertex buffer
-        //glEnableVertexAttribArray(positionAttribLoc);
-        //glVertexAttribPointer(positionAttribLoc, 3, GL_FLOAT, false, SIZEOF_AXES_VERTEX, 0);
-        //glEnableVertexAttribArray(colorAttribLoc);
-        //glVertexAttribPointer(colorAttribLoc, 3, GL_FLOAT, false, SIZEOF_AXES_VERTEX, COLOR_OFFSET);
 
         // get cube program attributes
         positionAttribLoc = glGetAttribLocation(modelProgram, "position");
@@ -337,9 +347,17 @@ public class ProjectOpenGL {
         glEnableVertexAttribArray(normalAttribLoc);
         glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, NORMAL_OFFSET);
         
-        // bind ballerina buffer
+        // bind scene buffer
         glBindVertexArray(sceneArray);
         glBindBuffer(GL_ARRAY_BUFFER, sceneBuffer);
+        glEnableVertexAttribArray(positionAttribLoc);
+        glVertexAttribPointer(positionAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, 0);
+        glEnableVertexAttribArray(normalAttribLoc);
+        glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, NORMAL_OFFSET);
+        
+        // bind seat buffer
+        glBindVertexArray(seatArray);
+        glBindBuffer(GL_ARRAY_BUFFER, seatBuffer);
         glEnableVertexAttribArray(positionAttribLoc);
         glVertexAttribPointer(positionAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, 0);
         glEnableVertexAttribArray(normalAttribLoc);
@@ -374,21 +392,28 @@ public class ProjectOpenGL {
                 .lookAt(camera.getEyePosition(), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0));
 
         
-        Material mat4 = new Material(new Vector3f(0.25f), new Vector3f(0.15f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
-        drawModel(new Matrix4f().translate(0, -15, -5).scale(6f), view, projection, sceneArray, scene.getTriangleCount() * 3, mat4);
-        //creating material
-        Material mat = new Material(new Vector3f(0.33f, 0.22f, 0.03f), new Vector3f(0.78f, 0.57f, 0.11f), new Vector3f(0.99f, 0.94f, 0.81f), 27.90f);
-        drawModel(new Matrix4f().translate(0, -5, -5).rotate(t, 0f, 1f, 0f), view.rotate(t, 0f, 1f, 0f), projection, ballerinaArray, ballerina.getTriangleCount() * 3, mat);
-
-        Material mat2 = new Material(new Vector3f(0.21f, 0.13f, 0.05f), new Vector3f(0.71f, 0.43f, 0.18f), new Vector3f(0.39f, 0.27f, 0.17f), 25.6f);
-        drawModel(new Matrix4f().translate(-5, -5, 0).rotate(-30, 0f, 1f, 0f).rotate(t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, mat2);
-
-        Material mat3 = new Material(new Vector3f(0.25f), new Vector3f(0.4f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
-        drawModel(new Matrix4f().translate(5, -5, 0).rotate(30, 0f, 1f, 0f).rotate(t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, mat3);
         
-    
+        Material matScene = new Material(new Vector3f(0.25f), new Vector3f(0.15f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
+        drawModel(new Matrix4f().translate(0, -15, -5).scale(6f), view, projection, sceneArray, scene.getTriangleCount() * 3, matScene);
+        
+        Material matSeat = new Material(new Vector3f(0.25f), new Vector3f(0.15f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
+        drawModel(new Matrix4f().scale(0.1f).translate(130, -80, 0), view, projection, seatArray, seat.getTriangleCount() * 3, matSeat);
+        //creating material
+        Material matBalCenter = new Material(new Vector3f(0.33f, 0.22f, 0.03f), new Vector3f(0.78f, 0.57f, 0.11f), new Vector3f(0.99f, 0.94f, 0.81f), 27.90f);
+        drawModel(new Matrix4f().translate(0, -5, -5).rotate(t, 0f, 1f, 0f), view.rotate(t, 0f, 1f, 0f), projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalCenter);
+
+        Material matBalLeft = new Material(new Vector3f(0.21f, 0.13f, 0.05f), new Vector3f(0.71f, 0.43f, 0.18f), new Vector3f(0.39f, 0.27f, 0.17f), 25.6f);
+        drawModel(new Matrix4f().translate(-5, -5, 0).rotate(-30, 0f, 1f, 0f).rotate(t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalLeft);
+
+        Material matBalRight = new Material(new Vector3f(0.25f), new Vector3f(0.4f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
+        drawModel(new Matrix4f().translate(5, -5, 0).rotate(30, 0f, 1f, 0f).rotate(t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalRight);
+        
+        
+        
         
     }
+    
+    
     private void drawModel(Matrix4f model, Matrix4f view, Matrix4f projection, int vao, int count) {
         drawModel(model, view, projection, vao, count, null);
     }
@@ -409,7 +434,7 @@ public class ProjectOpenGL {
 
         //setting values for light 
         //light as a point light
-        glUniform4f(lightPositionLoc, 0, 15, 0, 1);
+        glUniform4f(lightPositionLoc, 0, 40, 0, 1);
         glUniform3f(lightAmbientColorLoc, 0.15f, 0.15f, 0.15f);
         glUniform3f(lightDiffuseColorLoc, 1, 1, 1);
         glUniform3f(lightSpecularColorLoc, 1, 1, 1);
