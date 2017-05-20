@@ -10,6 +10,10 @@ import java.nio.IntBuffer;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -29,8 +33,12 @@ import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL31.glDrawArraysInstanced;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
+import sun.applet.Main;
 
 public class ProjectOpenGL {
+    
+    private static SoundThread soundThread;
+    private static Thread threadS;
     private static final int SIZEOF_MODEL_VERTEX = 6 * Float.BYTES;
     private static final int NORMAL_OFFSET = 3 * Float.BYTES;
     private static final int NUMBER_OF_INSTANCES = 50;
@@ -117,9 +125,12 @@ public class ProjectOpenGL {
     public void run() {
         System.out.println("Version of LWJGL is: " + Version.getVersion() + "!");
         camera = new Camera();
+        soundThread = new SoundThread(true);
+        threadS = new Thread(soundThread);
+        threadS.start();
         initGLFW();
         loop();
-        
+        soundThread.terminate();
         // Free the window callbacks and destroy the window
         glfwFreeCallbacks(window);
         glfwDestroyWindow(window);
@@ -162,6 +173,17 @@ public class ProjectOpenGL {
                         break;
                     case GLFW_KEY_L:
                         mode = GL_LINE;
+                        break;
+                    case GLFW_KEY_S:
+                        /*if(soundThread.getRunning().get())
+                            soundThread.terminate();
+                        else{
+                            
+                            threadS = new Thread(soundThread);
+                            threadS.start();
+                        }*/
+                            
+                        
                         break;
                     case GLFW_KEY_F:
                         mode = GL_FILL;
@@ -232,10 +254,11 @@ public class ProjectOpenGL {
     private void loop() {
         // Prepare data for rendering
         init();
-
+        
         // Run the rendering loop until pressed the ESCAPE key.
         while (!glfwWindowShouldClose(window)) {
             render();
+            
             glfwSwapBuffers(window); // swap the color buffers
             // Poll for window events. The key callback above will only be
             // invoked during this call.
@@ -456,7 +479,7 @@ public class ProjectOpenGL {
 
         // animate variables
         if (animate) {
-            t += 0.1f;
+            t += 0.08f;
         }
 
         glPolygonMode(GL_FRONT_AND_BACK, mode);
@@ -652,4 +675,5 @@ public class ProjectOpenGL {
         return sb.toString();
     }
 
+    
 }
