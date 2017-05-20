@@ -33,7 +33,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 public class ProjectOpenGL {
     private static final int SIZEOF_MODEL_VERTEX = 6 * Float.BYTES;
     private static final int NORMAL_OFFSET = 3 * Float.BYTES;
-    private static final int NUMBER_OF_INSTANCES = 20;
+    private static final int NUMBER_OF_INSTANCES = 50;
     private static final int TEXCOORD_OFFSET = 6 * Float.BYTES;
 
     private Camera camera;
@@ -306,9 +306,9 @@ public class ProjectOpenGL {
 
         for(int i=0; i< NUMBER_OF_INSTANCES; i++){
             //jednotkova matica + posun
-            modelMatrices[i] = new Matrix4f().translate((i % 10 - 4.5f) * 6f, -15, (i/10 + 5f) * 6f)
+            modelMatrices[i] = new Matrix4f().translate((i % 8 - 5.5f) * 6f, -15, (i/10 +7f) * 6f)
                     .rotate(110, 0f, 1f, 0f)
-                    .scale(0.025f);
+                    .scale(0.05f);
         }
         
         
@@ -456,7 +456,7 @@ public class ProjectOpenGL {
 
         // animate variables
         if (animate) {
-            t += 0.02f;
+            t += 0.1f;
         }
 
         glPolygonMode(GL_FRONT_AND_BACK, mode);
@@ -469,13 +469,13 @@ public class ProjectOpenGL {
         Matrix4f view = new Matrix4f()
                 .lookAt(camera.getEyePosition(), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0));
 
-        //drawing SCENE + 1 SEAT + BALLERINAS
+        //drawing SCENE 
         Material matScene = new Material(new Vector3f(0.25f), new Vector3f(0.15f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
         drawModel(new Matrix4f().translate(0, -15, -5).scale(6f), view, projection, sceneArray, scene.getTriangleCount() * 3, matScene);
-        
-        //Material matSeat = new Material(new Vector3f(0.33f, 0.22f, 0.03f), new Vector3f(0.15f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
-        //drawModel(new Matrix4f().translate(0, -15, 20).rotate(110, 0f, 1f, 0f).scale(0.020f), view, projection, seatArray, seat.getTriangleCount() * 3, matSeat);
-        //creating material
+        // drawing seats
+        drawSeats(new Matrix4f(), view, projection, seatArray, seat.getTriangleCount() * 3);
+
+        //drawing ballerinas
         Material matBalCenter = new Material(new Vector3f(0.33f, 0.22f, 0.03f), new Vector3f(0.78f, 0.57f, 0.11f), new Vector3f(0.99f, 0.94f, 0.81f), 27.90f);
         drawModel(new Matrix4f().translate(0, -5, -5).rotate(t, 0f, 1f, 0f), view.rotate(t, 0f, 1f, 0f), projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalCenter);
 
@@ -485,10 +485,8 @@ public class ProjectOpenGL {
         Material matBalRight = new Material(new Vector3f(0.25f), new Vector3f(0.4f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
         drawModel(new Matrix4f().translate(5, -5, 0).rotate(30, 0f, 1f, 0f).rotate(t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalRight);
         
-        glPolygonMode(GL_FRONT_AND_BACK, mode);
-
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        drawSeats(new Matrix4f(), view, projection, seatArray, seat.getTriangleCount() * 3);
+        
+        
     }
     
     private void drawSeats(Matrix4f model, Matrix4f view, Matrix4f projection, int vao, int count) {
