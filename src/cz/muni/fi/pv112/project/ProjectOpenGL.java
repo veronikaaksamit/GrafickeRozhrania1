@@ -29,6 +29,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 public class ProjectOpenGL {
     private static final int SIZEOF_MODEL_VERTEX = 6 * Float.BYTES;
     private static final int NORMAL_OFFSET = 3 * Float.BYTES;
+    private static final int NUMBER_OF_INSTANCES = 100;
 
     private Camera camera;
 
@@ -67,10 +68,15 @@ public class ProjectOpenGL {
     private int modelNUniformLoc;
     private int modelModelLoc;
 
-    private int lightPositionLoc;
-    private int lightAmbientColorLoc;
-    private int lightDiffuseColorLoc;
-    private int lightSpecularColorLoc;
+    private int lightPositionLoc1;
+    private int lightAmbientColorLoc1;
+    private int lightDiffuseColorLoc1;
+    private int lightSpecularColorLoc1;
+    
+    private int lightPositionLoc2;
+    private int lightAmbientColorLoc2;
+    private int lightDiffuseColorLoc2;
+    private int lightSpecularColorLoc2;
 
     private int materialAmbientColorLoc;
     private int materialDiffuseColorLoc;
@@ -234,10 +240,16 @@ public class ProjectOpenGL {
         modelModelLoc = glGetUniformLocation(modelProgram, "model");
 
         //storing uniform variable locations LIGHT
-        lightPositionLoc = glGetUniformLocation(modelProgram, "lightPosition");
-        lightAmbientColorLoc = glGetUniformLocation(modelProgram, "lightAmbientColor");
-        lightDiffuseColorLoc = glGetUniformLocation(modelProgram, "lightDiffuseColor");
-        lightSpecularColorLoc = glGetUniformLocation(modelProgram, "lightSpecularColor");
+        lightPositionLoc1 = glGetUniformLocation(modelProgram, "lightPosition1");
+        lightAmbientColorLoc1 = glGetUniformLocation(modelProgram, "lightAmbientColor1");
+        lightDiffuseColorLoc1 = glGetUniformLocation(modelProgram, "lightDiffuseColor1");
+        lightSpecularColorLoc1 = glGetUniformLocation(modelProgram, "lightSpecularColor1");
+        
+        //storing uniform variable locations for LIGHT2
+        lightPositionLoc2 = glGetUniformLocation(modelProgram, "lightPosition2");
+        lightAmbientColorLoc2 = glGetUniformLocation(modelProgram, "lightAmbientColor2");
+        lightDiffuseColorLoc2 = glGetUniformLocation(modelProgram, "lightDiffuseColor2");
+        lightSpecularColorLoc2 = glGetUniformLocation(modelProgram, "lightSpecularColor2");
 
         //storing uniform variable locations for eyePosition
         eyePositionLoc = glGetUniformLocation(modelProgram, "eyePosition");
@@ -259,7 +271,7 @@ public class ProjectOpenGL {
         // load ballerina and fill buffer with ballerina data
         ballerina = new ObjLoader("/resources/models/ballerina.obj");
         scene = new ObjLoader("/resources/models/scene.obj");
-        seat = new ObjLoader("/resources/models/UV_modely/box.obj");
+        seat = new ObjLoader("/resources/models/seat1.obj");
         try {
             ballerina.load();
             scene.load();
@@ -396,8 +408,8 @@ public class ProjectOpenGL {
         Material matScene = new Material(new Vector3f(0.25f), new Vector3f(0.15f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
         drawModel(new Matrix4f().translate(0, -15, -5).scale(6f), view, projection, sceneArray, scene.getTriangleCount() * 3, matScene);
         
-        Material matSeat = new Material(new Vector3f(0.25f), new Vector3f(0.15f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
-        drawModel(new Matrix4f().scale(0.1f).translate(130, -80, 0), view, projection, seatArray, seat.getTriangleCount() * 3, matSeat);
+        Material matSeat = new Material(new Vector3f(0.33f, 0.22f, 0.03f), new Vector3f(0.15f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
+        drawModel(new Matrix4f().translate(0, -15, 20).rotate(110, 0f, 1f, 0f).scale(0.020f), view, projection, seatArray, seat.getTriangleCount() * 3, matSeat);
         //creating material
         Material matBalCenter = new Material(new Vector3f(0.33f, 0.22f, 0.03f), new Vector3f(0.78f, 0.57f, 0.11f), new Vector3f(0.99f, 0.94f, 0.81f), 27.90f);
         drawModel(new Matrix4f().translate(0, -5, -5).rotate(t, 0f, 1f, 0f), view.rotate(t, 0f, 1f, 0f), projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalCenter);
@@ -434,10 +446,16 @@ public class ProjectOpenGL {
 
         //setting values for light 
         //light as a point light
-        glUniform4f(lightPositionLoc, 0, 40, 0, 1);
-        glUniform3f(lightAmbientColorLoc, 0.15f, 0.15f, 0.15f);
-        glUniform3f(lightDiffuseColorLoc, 1, 1, 1);
-        glUniform3f(lightSpecularColorLoc, 1, 1, 1);
+        glUniform4f(lightPositionLoc1, 0, 40, 0, 1);
+        glUniform3f(lightAmbientColorLoc1, 0.15f, 0.15f, 0.15f);
+        glUniform3f(lightDiffuseColorLoc1, 1, 1, 1);
+        glUniform3f(lightSpecularColorLoc1, 1, 1, 1);
+        
+        //second light
+        glUniform4f(lightPositionLoc2, 0, 0, -20, 1);
+        glUniform3f(lightAmbientColorLoc2, 0.15f, 0.15f, 0.15f);
+        glUniform3f(lightDiffuseColorLoc2, 1, 1, 1);
+        glUniform3f(lightSpecularColorLoc2, 1, 1, 1);
 
         //eye position as camera position
         glUniform3f(eyePositionLoc, camera.getEyePosition().x, camera.getEyePosition().y, camera.getEyePosition().z);
