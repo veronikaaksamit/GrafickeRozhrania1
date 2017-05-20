@@ -126,9 +126,10 @@ public class ProjectOpenGL {
         System.out.println("Version of LWJGL is: " + Version.getVersion() + "!");
         camera = new Camera();
         soundThread = new SoundThread(true);
+        
+        initGLFW();
         threadS = new Thread(soundThread);
         threadS.start();
-        initGLFW();
         loop();
         soundThread.terminate();
         // Free the window callbacks and destroy the window
@@ -267,7 +268,6 @@ public class ProjectOpenGL {
     }
 
     private void init() {
-        // default
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glLineWidth(3.0f); // makes lines thicker
 
@@ -312,7 +312,6 @@ public class ProjectOpenGL {
         
         
         //SEATS
-        
         seatMvpLoc = glGetUniformLocation(seatProgram, "MVP");
         seatNLoc = glGetUniformLocation(seatProgram, "N");
         seatModelLoc = glGetUniformLocation(seatProgram, "model");
@@ -324,20 +323,16 @@ public class ProjectOpenGL {
         seatLightAmbientColorLoc = glGetUniformLocation(seatProgram, "lightAmbientColor");
         seatLightDiffuseColorLoc = glGetUniformLocation(seatProgram, "lightDiffuseColor");
         seatLightSpecularColorLoc = glGetUniformLocation(seatProgram, "lightSpecularColor");
-
+        
         seatEyePositionLoc = glGetUniformLocation(seatProgram, "eyePosition");
 
         for(int i=0; i< NUMBER_OF_INSTANCES; i++){
-            //jednotkova matica + posun
             modelMatrices[i] = new Matrix4f().translate((i % 8 - 5.5f) * 6f, -15, (i/10 +7f) * 6f)
                     .rotate(110, 0f, 1f, 0f)
                     .scale(0.05f);
         }
-        
-        
-        // Task 6: as in previous task, pass the 100 teapot colors
+       
         for(int i=0; i< NUMBER_OF_INSTANCES; i++){
-            //jednotkova matica + posun
             seatColors[i] = new Vector4f(0.126f, 0.150f, 0.200f, 1f);
             
         }
@@ -349,8 +344,7 @@ public class ProjectOpenGL {
         ballerinaBuffer = buffers[1];
         seatBuffer = buffers[2];
 
-
-        // load ballerina and fill buffer with ballerina data
+        // load and fill object data
         ballerina = new ObjLoader("/resources/models/ballerina.obj");
         scene = new ObjLoader("/resources/models/scene.obj");
         seat = new ObjLoader("/resources/models/seat1.obj");
@@ -378,10 +372,8 @@ public class ProjectOpenGL {
         ballerina.rewind();
         glBindBuffer(GL_ARRAY_BUFFER, ballerinaBuffer);
         glBufferData(GL_ARRAY_BUFFER, ballerina, GL_STATIC_DRAW);
-
-        // clear buffer binding, so that other code doesn't presume it (easier error detection)
+        // clear buffer binding
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-        
         
         length = 3 * 6 * scene.getTriangleCount();
         FloatBuffer scene = BufferUtils.createFloatBuffer(length);
@@ -428,7 +420,6 @@ public class ProjectOpenGL {
         seatArray = arrays[2];
 
         int positionAttribLoc;
-        int colorAttribLoc;
 
         // get cube program attributes
         positionAttribLoc = glGetAttribLocation(modelProgram, "position");
@@ -453,16 +444,13 @@ public class ProjectOpenGL {
         
         positionAttribLoc = glGetAttribLocation(seatProgram, "position");
         normalAttribLoc = glGetAttribLocation(seatProgram, "normal");
-        //int texcoordAttribLoc = glGetAttribLocation(seatProgram, "texcoord");
-        // bind teapot buffer
+        // bind seat buffer
         glBindVertexArray(seatArray);
         glBindBuffer(GL_ARRAY_BUFFER, seatBuffer);
         glEnableVertexAttribArray(positionAttribLoc);
         glVertexAttribPointer(positionAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, 0);
         glEnableVertexAttribArray(normalAttribLoc);
         glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, NORMAL_OFFSET);
-        //glEnableVertexAttribArray(texcoordAttribLoc);
-        //glVertexAttribPointer(texcoordAttribLoc, 2, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, TEXCOORD_OFFSET);
 
         // clear bindings, so that other code doesn't presume it (easier error detection)
         glBindBuffer(GL_ARRAY_BUFFER, 0);
