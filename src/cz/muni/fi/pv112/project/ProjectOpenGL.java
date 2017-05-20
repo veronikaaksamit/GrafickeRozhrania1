@@ -1,16 +1,19 @@
 package cz.muni.fi.pv112.project;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -23,13 +26,15 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL31.glDrawArraysInstanced;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class ProjectOpenGL {
     private static final int SIZEOF_MODEL_VERTEX = 6 * Float.BYTES;
     private static final int NORMAL_OFFSET = 3 * Float.BYTES;
-    private static final int NUMBER_OF_INSTANCES = 100;
+    private static final int NUMBER_OF_INSTANCES = 20;
+    private static final int TEXCOORD_OFFSET = 6 * Float.BYTES;
 
     private Camera camera;
 
@@ -62,6 +67,21 @@ public class ProjectOpenGL {
     private int sceneArray;
     private int seatArray;
     
+    private int seatProgram;
+
+    private int seatMvpLoc;
+    private int seatNLoc;
+    private int seatModelLoc;
+    
+    private int seatViewLoc;
+    private int seatProjectionLoc;
+
+    private int seatLightPositionLoc;
+    private int seatLightAmbientColorLoc;
+    private int seatLightDiffuseColorLoc;
+    private int seatLightSpecularColorLoc;
+
+    private int seatEyePositionLoc;
 
     private int modelProgram;
     private int modelMvpUniformLoc;
@@ -84,6 +104,11 @@ public class ProjectOpenGL {
     private int materialShininessLoc;
 
     private int eyePositionLoc;
+    
+    private final Matrix4f[] modelMatrices = new Matrix4f[NUMBER_OF_INSTANCES];
+    private final Vector4f[] seatColors = new Vector4f[NUMBER_OF_INSTANCES];
+    
+    FloatBuffer seatDataBuffer = BufferUtils.createFloatBuffer(NUMBER_OF_INSTANCES * (16 + 4));
 
     public static void main(String[] args) {
         new ProjectOpenGL().run();
@@ -227,6 +252,8 @@ public class ProjectOpenGL {
 
         // load GLSL program (vertex and fragment shaders)
         try {
+            seatProgram = loadProgram("/resources/shaders/seat.vs.glsl",
+                    "/resources/shaders/seat.fs.glsl");
             modelProgram = loadProgram("/resources/shaders/model.vs.glsl",
                     "/resources/shaders/model.fs.glsl");
         } catch (IOException ex) {
@@ -259,7 +286,39 @@ public class ProjectOpenGL {
         materialDiffuseColorLoc = glGetUniformLocation(modelProgram, "materialDiffuseColor");
         materialSpecularColorLoc = glGetUniformLocation(modelProgram, "materialSpecularColor");
         materialShininessLoc = glGetUniformLocation(modelProgram, "materialShininess");
+        
+        
+        //SEATS
+        
+        seatMvpLoc = glGetUniformLocation(seatProgram, "MVP");
+        seatNLoc = glGetUniformLocation(seatProgram, "N");
+        seatModelLoc = glGetUniformLocation(seatProgram, "model");
+        
+        seatProjectionLoc = glGetUniformLocation(seatProgram, "projection");
+        seatViewLoc = glGetUniformLocation(seatProgram, "view");
 
+        seatLightPositionLoc = glGetUniformLocation(seatProgram, "lightPosition");
+        seatLightAmbientColorLoc = glGetUniformLocation(seatProgram, "lightAmbientColor");
+        seatLightDiffuseColorLoc = glGetUniformLocation(seatProgram, "lightDiffuseColor");
+        seatLightSpecularColorLoc = glGetUniformLocation(seatProgram, "lightSpecularColor");
+
+        seatEyePositionLoc = glGetUniformLocation(seatProgram, "eyePosition");
+
+        for(int i=0; i< NUMBER_OF_INSTANCES; i++){
+            //jednotkova matica + posun
+            modelMatrices[i] = new Matrix4f().translate((i % 10 - 4.5f) * 6f, -15, (i/10 + 5f) * 6f)
+                    .rotate(110, 0f, 1f, 0f)
+                    .scale(0.025f);
+        }
+        
+        
+        // Task 6: as in previous task, pass the 100 teapot colors
+        for(int i=0; i< NUMBER_OF_INSTANCES; i++){
+            //jednotkova matica + posun
+            seatColors[i] = new Vector4f(0.126f, 0.150f, 0.200f, 1f);
+            
+        }
+        
         // create buffers with geometry
         int[] buffers = new int[3];
         glGenBuffers(buffers);
@@ -319,22 +378,23 @@ public class ProjectOpenGL {
         // clear buffer binding
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         
-        length = 3 * 6 * seat.getTriangleCount();
-        FloatBuffer seat = BufferUtils.createFloatBuffer(length);
-        for (int f = 0; f < this.seat.getTriangleCount(); f++) {
-            int[] pi = this.seat.getVertexIndices().get(f);
-            int[] ni = this.seat.getNormalIndices().get(f);
+        int seatLength = 3 * 8 * seat.getTriangleCount();
+        FloatBuffer seatData = BufferUtils.createFloatBuffer(seatLength);
+        for (int f = 0; f < seat.getTriangleCount(); f++) {
+            int[] pi = seat.getVertexIndices().get(f);
+            int[] ni = seat.getNormalIndices().get(f);
             for (int i = 0; i < 3; i++) {
-                float[] position = this.seat.getVertices().get(pi[i]);
-                float[] normal = this.seat.getNormals().get(ni[i]);
-                seat.put(position);
-                seat.put(normal);
+                float[] position = seat.getVertices().get(pi[i]);
+                float[] normal = seat.getNormals().get(ni[i]);
+                seatData.put(position);
+                seatData.put(normal);
             }
         }
-        seat.rewind();
+        seatData.rewind();
         glBindBuffer(GL_ARRAY_BUFFER, seatBuffer);
-        glBufferData(GL_ARRAY_BUFFER, seat, GL_STATIC_DRAW);
-        // clear buffer binding
+        glBufferData(GL_ARRAY_BUFFER, seatData, GL_STATIC_DRAW);
+
+        // clear buffer binding, so that other code doesn't presume it (easier error detection)
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // create a vertex array object for the geometry
@@ -367,13 +427,19 @@ public class ProjectOpenGL {
         glEnableVertexAttribArray(normalAttribLoc);
         glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, NORMAL_OFFSET);
         
-        // bind seat buffer
+        
+        positionAttribLoc = glGetAttribLocation(seatProgram, "position");
+        normalAttribLoc = glGetAttribLocation(seatProgram, "normal");
+        //int texcoordAttribLoc = glGetAttribLocation(seatProgram, "texcoord");
+        // bind teapot buffer
         glBindVertexArray(seatArray);
         glBindBuffer(GL_ARRAY_BUFFER, seatBuffer);
         glEnableVertexAttribArray(positionAttribLoc);
         glVertexAttribPointer(positionAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, 0);
         glEnableVertexAttribArray(normalAttribLoc);
         glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, NORMAL_OFFSET);
+        //glEnableVertexAttribArray(texcoordAttribLoc);
+        //glVertexAttribPointer(texcoordAttribLoc, 2, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, TEXCOORD_OFFSET);
 
         // clear bindings, so that other code doesn't presume it (easier error detection)
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -403,13 +469,12 @@ public class ProjectOpenGL {
         Matrix4f view = new Matrix4f()
                 .lookAt(camera.getEyePosition(), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0));
 
-        
-        
+        //drawing SCENE + 1 SEAT + BALLERINAS
         Material matScene = new Material(new Vector3f(0.25f), new Vector3f(0.15f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
         drawModel(new Matrix4f().translate(0, -15, -5).scale(6f), view, projection, sceneArray, scene.getTriangleCount() * 3, matScene);
         
-        Material matSeat = new Material(new Vector3f(0.33f, 0.22f, 0.03f), new Vector3f(0.15f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
-        drawModel(new Matrix4f().translate(0, -15, 20).rotate(110, 0f, 1f, 0f).scale(0.020f), view, projection, seatArray, seat.getTriangleCount() * 3, matSeat);
+        //Material matSeat = new Material(new Vector3f(0.33f, 0.22f, 0.03f), new Vector3f(0.15f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
+        //drawModel(new Matrix4f().translate(0, -15, 20).rotate(110, 0f, 1f, 0f).scale(0.020f), view, projection, seatArray, seat.getTriangleCount() * 3, matSeat);
         //creating material
         Material matBalCenter = new Material(new Vector3f(0.33f, 0.22f, 0.03f), new Vector3f(0.78f, 0.57f, 0.11f), new Vector3f(0.99f, 0.94f, 0.81f), 27.90f);
         drawModel(new Matrix4f().translate(0, -5, -5).rotate(t, 0f, 1f, 0f), view.rotate(t, 0f, 1f, 0f), projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalCenter);
@@ -420,15 +485,67 @@ public class ProjectOpenGL {
         Material matBalRight = new Material(new Vector3f(0.25f), new Vector3f(0.4f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
         drawModel(new Matrix4f().translate(5, -5, 0).rotate(30, 0f, 1f, 0f).rotate(t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalRight);
         
+        glPolygonMode(GL_FRONT_AND_BACK, mode);
+
+        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        drawSeats(new Matrix4f(), view, projection, seatArray, seat.getTriangleCount() * 3);
+    }
+    
+    private void drawSeats(Matrix4f model, Matrix4f view, Matrix4f projection, int vao, int count) {
+        glUseProgram(seatProgram);
+        glBindVertexArray(vao);
+
+        glUniform3f(seatEyePositionLoc, camera.getEyePosition().x, camera.getEyePosition().y, camera.getEyePosition().z);
+
+        FloatBuffer projectionData = BufferUtils.createFloatBuffer(16);
+        FloatBuffer viewData = BufferUtils.createFloatBuffer(16);
         
+        projection.get(projectionData);
+        view.get(viewData);
         
+        glUniformMatrix4fv(seatProjectionLoc, false, projectionData);
+        glUniformMatrix4fv(seatViewLoc, false, viewData);
         
+        FloatBuffer modelData = BufferUtils.createFloatBuffer(16);
+        for(int i=0; i< NUMBER_OF_INSTANCES; i++){
+            modelMatrices[i].get(modelData);
+            int modelLoc = glGetUniformLocation(seatProgram, "model[" + i + "]");
+            glUniformMatrix4fv(modelLoc, false, modelData); 
+        }
+        
+        FloatBuffer colorData = BufferUtils.createFloatBuffer(4);
+        for(int i=0; i< NUMBER_OF_INSTANCES; i++){
+            seatColors[i].get(colorData);
+            int colorLoc = glGetUniformLocation(seatProgram, "color[" + i + "]");
+            glUniform4fv(colorLoc, colorData); 
+        }
+        
+        //glUniformMatrix4fv(seatNLoc, false, modelData);      
+        
+        glUniform4f(seatLightPositionLoc, 2, 5, 3, 1);
+        glUniform3f(seatLightAmbientColorLoc, 0.3f, 0.3f, 0.3f);
+        glUniform3f(seatLightDiffuseColorLoc, 1, 1, 1);
+        glUniform3f(seatLightSpecularColorLoc, 1, 1, 1);
+
+        glDrawArraysInstanced(GL_TRIANGLES, 0, count, NUMBER_OF_INSTANCES);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindVertexArray(0);
+        glUseProgram(0);
+    }
+    
+    private Vector4f randomColor() {
+        Random random = new Random();
+
+        float hue = random.nextFloat();
+        float saturation = random.nextFloat();
+        float brightness = 0.7f;
+
+        Color color = Color.getHSBColor(hue, saturation, brightness);
+
+        return new Vector4f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, 1);
     }
     
     
-    private void drawModel(Matrix4f model, Matrix4f view, Matrix4f projection, int vao, int count) {
-        drawModel(model, view, projection, vao, count, null);
-    }
 
     private void drawModel(Matrix4f model, Matrix4f view, Matrix4f projection, int vao, int count, Material material) {
         // compute model-view-projection matrix
