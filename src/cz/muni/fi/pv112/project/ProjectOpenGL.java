@@ -39,59 +39,73 @@ public class ProjectOpenGL {
     
     private static SoundThread soundThread;
     private static Thread threadS;
+    
     private static final int SIZEOF_MODEL_VERTEX = 6 * Float.BYTES;
     private static final int NORMAL_OFFSET = 3 * Float.BYTES;
     private static final int NUMBER_OF_INSTANCES = 50;
     private static final int TEXCOORD_OFFSET = 6 * Float.BYTES;
 
     private Camera camera;
+    // animation
+    private boolean animate = false;
+    private float t = 0f;
+    // rendering mode
+    private int mode = GL_FILL;
 
+    // <editor-fold defaultstate="collapsed" desc="window properties">
     // the window handle
     private long window;
-
+    
     // window size
     private int width;
     private int height;
     private boolean resized = false;
-
-    // animation
-    private boolean animate = false;
-    private float t = 0f;
-
-    // rendering mode
-    private int mode = GL_FILL;
-
+    // </editor-fold>
+        
+    // <editor-fold defaultstate="collapsed" desc="MODELS">
     // models
     private ObjLoader ballerina;
     private ObjLoader scene;
+    private ObjLoader lCurtain;
+    private ObjLoader rCurtain;
     private ObjLoader seat;
+    // </editor-fold>
 
-    // Buffers and arrays for models
+    // <editor-fold defaultstate="collapsed" desc="BUFFERS for models">
     private int ballerinaBuffer;
     private int sceneBuffer;
+    private int lCurtainBuffer;
+    private int rCurtainBuffer;
     private int seatBuffer;
-    
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="ARRAYS for models">
     private int ballerinaArray;
     private int sceneArray;
+    private int lCurtainArray;
+    private int rCurtainArray;
     private int seatArray;
+    // </editor-fold>
     
+    // <editor-fold defaultstate="collapsed" desc="PROGRAMS"> 
     private int seatProgram;
-
+    private int modelProgram;
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="seat program uniform locations for SEAT SHADERS">
     private int seatMvpLoc;
     private int seatNLoc;
     private int seatModelLoc;
-    
     private int seatViewLoc;
     private int seatProjectionLoc;
-
     private int seatLightPositionLoc;
     private int seatLightAmbientColorLoc;
     private int seatLightDiffuseColorLoc;
     private int seatLightSpecularColorLoc;
-
     private int seatEyePositionLoc;
-
-    private int modelProgram;
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="model program uniform locations for MODEL SHADERS">
     private int modelMvpUniformLoc;
     private int modelNUniformLoc;
     private int modelModelLoc;
@@ -112,10 +126,10 @@ public class ProjectOpenGL {
     private int materialShininessLoc;
 
     private int eyePositionLoc;
+    // </editor-fold>
     
     private final Matrix4f[] modelMatrices = new Matrix4f[NUMBER_OF_INSTANCES];
     private final Vector4f[] seatColors = new Vector4f[NUMBER_OF_INSTANCES];
-    
     FloatBuffer seatDataBuffer = BufferUtils.createFloatBuffer(NUMBER_OF_INSTANCES * (16 + 4));
 
     public static void main(String[] args) {
@@ -336,58 +350,102 @@ public class ProjectOpenGL {
         }
         
         // create buffers with geometry
-        int[] buffers = new int[3];
+        int[] buffers = new int[5];
         glGenBuffers(buffers);
         sceneBuffer = buffers[0];
         ballerinaBuffer = buffers[1];
         seatBuffer = buffers[2];
+        lCurtainBuffer = buffers[3];
+        rCurtainBuffer = buffers[4];
 
         // load and fill object data
         ballerina = new ObjLoader("/resources/models/ballerina.obj");
         scene = new ObjLoader("/resources/models/scene.obj");
         seat = new ObjLoader("/resources/models/seat1.obj");
+        lCurtain = new ObjLoader("/resources/models/leftCurtain.obj");
+        rCurtain = new ObjLoader("/resources/models/rightCurtain.obj");
         try {
             ballerina.load();
             scene.load();
             seat.load();
+            lCurtain.load();
+            rCurtain.load();
         } catch (IOException ex) {
             Logger.getLogger(ProjectOpenGL.class.getName()).log(Level.SEVERE, null, ex);
             System.exit(1);
         }
         
-        int length = 3 * 6 * ballerina.getTriangleCount();
-        FloatBuffer ballerina = BufferUtils.createFloatBuffer(length);
+        int length = 3 * 6 * lCurtain.getTriangleCount();
+        FloatBuffer lCurtainData = BufferUtils.createFloatBuffer(length);
+        for (int f = 0; f < this.lCurtain.getTriangleCount(); f++) {
+            int[] pi = this.lCurtain.getVertexIndices().get(f);
+            int[] ni = this.lCurtain.getNormalIndices().get(f);
+            for (int i = 0; i < 3; i++) {
+                float[] position = this.lCurtain.getVertices().get(pi[i]);
+                float[] normal = this.lCurtain.getNormals().get(ni[i]);
+                lCurtainData.put(position);
+                lCurtainData.put(normal);
+            }
+        }
+        lCurtainData.rewind();
+        glBindBuffer(GL_ARRAY_BUFFER, lCurtainBuffer);
+        glBufferData(GL_ARRAY_BUFFER, lCurtainData, GL_STATIC_DRAW);
+        // clear buffer binding
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        
+        length = 3 * 6 * rCurtain.getTriangleCount();
+        FloatBuffer rCurtainData = BufferUtils.createFloatBuffer(length);
+        for (int f = 0; f < this.rCurtain.getTriangleCount(); f++) {
+            int[] pi = this.rCurtain.getVertexIndices().get(f);
+            int[] ni = this.rCurtain.getNormalIndices().get(f);
+            for (int i = 0; i < 3; i++) {
+                float[] position = this.rCurtain.getVertices().get(pi[i]);
+                float[] normal = this.rCurtain.getNormals().get(ni[i]);
+                rCurtainData.put(position);
+                rCurtainData.put(normal);
+            }
+        }
+        rCurtainData.rewind();
+        glBindBuffer(GL_ARRAY_BUFFER, rCurtainBuffer);
+        glBufferData(GL_ARRAY_BUFFER, rCurtainData, GL_STATIC_DRAW);
+        // clear buffer binding
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        
+        
+        
+        length = 3 * 6 * ballerina.getTriangleCount();
+        FloatBuffer ballerinaData = BufferUtils.createFloatBuffer(length);
         for (int f = 0; f < this.ballerina.getTriangleCount(); f++) {
             int[] pi = this.ballerina.getVertexIndices().get(f);
             int[] ni = this.ballerina.getNormalIndices().get(f);
             for (int i = 0; i < 3; i++) {
                 float[] position = this.ballerina.getVertices().get(pi[i]);
                 float[] normal = this.ballerina.getNormals().get(ni[i]);
-                ballerina.put(position);
-                ballerina.put(normal);
+                ballerinaData.put(position);
+                ballerinaData.put(normal);
             }
         }
-        ballerina.rewind();
+        ballerinaData.rewind();
         glBindBuffer(GL_ARRAY_BUFFER, ballerinaBuffer);
-        glBufferData(GL_ARRAY_BUFFER, ballerina, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, ballerinaData, GL_STATIC_DRAW);
         // clear buffer binding
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         
         length = 3 * 6 * scene.getTriangleCount();
-        FloatBuffer scene = BufferUtils.createFloatBuffer(length);
+        FloatBuffer sceneData = BufferUtils.createFloatBuffer(length);
         for (int f = 0; f < this.scene.getTriangleCount(); f++) {
             int[] pi = this.scene.getVertexIndices().get(f);
             int[] ni = this.scene.getNormalIndices().get(f);
             for (int i = 0; i < 3; i++) {
                 float[] position = this.scene.getVertices().get(pi[i]);
                 float[] normal = this.scene.getNormals().get(ni[i]);
-                scene.put(position);
-                scene.put(normal);
+                sceneData.put(position);
+                sceneData.put(normal);
             }
         }
-        scene.rewind();
+        sceneData.rewind();
         glBindBuffer(GL_ARRAY_BUFFER, sceneBuffer);
-        glBufferData(GL_ARRAY_BUFFER, scene, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sceneData, GL_STATIC_DRAW);
         // clear buffer binding
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         
@@ -411,11 +469,13 @@ public class ProjectOpenGL {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // create a vertex array object for the geometry
-        int[] arrays = new int[3];
+        int[] arrays = new int[5];
         glGenVertexArrays(arrays);
         sceneArray = arrays[0];
         ballerinaArray = arrays[1];
         seatArray = arrays[2];
+        lCurtainArray = arrays[3];
+        rCurtainArray = arrays[4];
 
         int positionAttribLoc;
 
@@ -423,7 +483,7 @@ public class ProjectOpenGL {
         positionAttribLoc = glGetAttribLocation(modelProgram, "position");
         int normalAttribLoc = glGetAttribLocation(modelProgram, "normal");
 
-        // bind ballerina buffer
+        // bind ballerinaData buffer
         glBindVertexArray(ballerinaArray);
         glBindBuffer(GL_ARRAY_BUFFER, ballerinaBuffer);
         glEnableVertexAttribArray(positionAttribLoc);
@@ -431,13 +491,30 @@ public class ProjectOpenGL {
         glEnableVertexAttribArray(normalAttribLoc);
         glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, NORMAL_OFFSET);
         
-        // bind scene buffer
+        // bind sceneData buffer
         glBindVertexArray(sceneArray);
         glBindBuffer(GL_ARRAY_BUFFER, sceneBuffer);
         glEnableVertexAttribArray(positionAttribLoc);
         glVertexAttribPointer(positionAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, 0);
         glEnableVertexAttribArray(normalAttribLoc);
         glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, NORMAL_OFFSET);
+        
+        // bind leftCurtain buffer
+        glBindVertexArray(lCurtainArray);
+        glBindBuffer(GL_ARRAY_BUFFER, lCurtainBuffer);
+        glEnableVertexAttribArray(positionAttribLoc);
+        glVertexAttribPointer(positionAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, 0);
+        glEnableVertexAttribArray(normalAttribLoc);
+        glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, NORMAL_OFFSET);
+        
+        // bind rightCurtain buffer
+        glBindVertexArray(rCurtainArray);
+        glBindBuffer(GL_ARRAY_BUFFER, rCurtainBuffer);
+        glEnableVertexAttribArray(positionAttribLoc);
+        glVertexAttribPointer(positionAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, 0);
+        glEnableVertexAttribArray(normalAttribLoc);
+        glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, NORMAL_OFFSET);
+        
         
         
         positionAttribLoc = glGetAttribLocation(seatProgram, "position");
@@ -478,9 +555,21 @@ public class ProjectOpenGL {
         Matrix4f view = new Matrix4f()
                 .lookAt(camera.getEyePosition(), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0));
 
+        //drawing curtains 
+        Material matCurtain = new Material(new Vector3f(0.25f), new Vector3f(0.15f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
+        if(t <1f){
+             drawModel(new Matrix4f().translate(0, 15, 0).scale(6f).scale(1f, -1f + t , 1f), view, projection, lCurtainArray, lCurtain.getTriangleCount() * 3, matCurtain);
+        }
+       
+        if(t <1f){
+             drawModel(new Matrix4f().translate(0, 15, 0).scale(6f).scale(1f, -1f + t , 1f), view, projection, rCurtainArray, rCurtain.getTriangleCount() * 3, matCurtain);
+        }
+        
+        
+        
         //drawing SCENE 
         Material matScene = new Material(new Vector3f(0.25f), new Vector3f(0.15f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
-        drawModel(new Matrix4f().translate(0, -15, -5).scale(6f), view, projection, sceneArray, scene.getTriangleCount() * 3, matScene);
+        drawModel(new Matrix4f().translate(0, -15, 0).scale(6f), view, projection, sceneArray, scene.getTriangleCount() * 3, matScene);
         // drawing seats
         drawSeats(new Matrix4f(), view, projection, seatArray, seat.getTriangleCount() * 3);
 
