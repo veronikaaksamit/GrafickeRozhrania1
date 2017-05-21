@@ -176,15 +176,13 @@ public class ProjectOpenGL {
                         mode = GL_LINE;
                         break;
                     case GLFW_KEY_S:
-                        /*if(soundThread.getRunning().get())
+                        if(soundThread.getRunning().get()){
                             soundThread.terminate();
-                        else{
-                            
-                            threadS = new Thread(soundThread);
-                            threadS.start();
-                        }*/
-                            
-                        
+                            System.err.println("thread was running" + soundThread.getRunning());
+                        }else{
+                            soundThread.start();
+                            System.err.println("START...thread is now "+ soundThread.getRunning() );
+                        }
                         break;
                     case GLFW_KEY_F:
                         mode = GL_FILL;
@@ -467,7 +465,7 @@ public class ProjectOpenGL {
 
         // animate variables
         if (animate) {
-            t += 0.08f;
+            t += 0.03f;
         }
 
         glPolygonMode(GL_FRONT_AND_BACK, mode);
@@ -488,13 +486,13 @@ public class ProjectOpenGL {
 
         //drawing ballerinas
         Material matBalCenter = new Material(new Vector3f(0.33f, 0.22f, 0.03f), new Vector3f(0.78f, 0.57f, 0.11f), new Vector3f(0.99f, 0.94f, 0.81f), 27.90f);
-        drawModel(new Matrix4f().translate(0, -5, -5).rotate(t, 0f, 1f, 0f), view.rotate(t, 0f, 1f, 0f), projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalCenter);
+        drawModel(new Matrix4f().translate(0, -5, -5).rotate(6*t, 0f, 1f, 0f), view.rotate(6*t, 0f, 1f, 0f), projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalCenter);
 
         Material matBalLeft = new Material(new Vector3f(0.21f, 0.13f, 0.05f), new Vector3f(0.71f, 0.43f, 0.18f), new Vector3f(0.39f, 0.27f, 0.17f), 25.6f);
-        drawModel(new Matrix4f().translate(-5, -5, 0).rotate(-30, 0f, 1f, 0f).rotate(t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalLeft);
+        drawModel(new Matrix4f().translate(-5, -5, 0).rotate(-30, 0f, 1f, 0f).rotate(6*t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalLeft);
 
         Material matBalRight = new Material(new Vector3f(0.25f), new Vector3f(0.4f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
-        drawModel(new Matrix4f().translate(5, -5, 0).rotate(30, 0f, 1f, 0f).rotate(t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalRight);
+        drawModel(new Matrix4f().translate(5, -5, 0).rotate(30, 0f, 1f, 0f).rotate(6*t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalRight);
         
         
         

@@ -24,6 +24,9 @@ class SoundThread  implements Runnable{
     private static volatile AtomicBoolean running ;
     private static Clip clip = null;
 
+    public Clip getClip(){
+        return clip;
+    }
     public SoundThread(boolean s){
         running = new AtomicBoolean(s);
     }
@@ -52,29 +55,34 @@ class SoundThread  implements Runnable{
                     System.err.println("Sound is not working " + e.getMessage() + e.getCause());
                 }
             }
-            clip.stop();
+            terminate();
+            
         }
     }
-//    public boolean change() {
-//        if(!running.get()){
-//            running.set(true);
-//            System.err.println("setting true");
-//            return true;
-//        }else{
-//            running.set(false);
-//            System.err.println("setting false");
-//            return false;
-//        }
-//    }
     
     public AtomicBoolean getRunning(){
+        if(isAtTheEnd()){
+            running.set(false);
+        }
         return running;
     }
     
-    /*public void start(){
+    public void start() {
+        if(!isAtTheEnd()){
+            clip.start();
+        }else{
+            clip.setFramePosition(0);
+            clip.start();
+        }
         running.set(true);
-    }*/
+    }
+    
+    public boolean isAtTheEnd(){
+        return clip.getLongFramePosition() == clip.getFrameLength();
+    }
+    
     public void terminate() {
+        clip.stop();
         running.set(false);
     }
     
