@@ -440,9 +440,15 @@ public class ProjectOpenGL {
 
         
         for(int i=0; i< NUMBER_OF_INSTANCES; i++){
-            modelMatrices[i] = new Matrix4f().translate((i % 8 - 5.5f) * 6f, -14.25f, (i/10 +7f) * 6f)
-                    .rotate(110, 0f, 1f, 0f)
-                    .scale(0.05f);
+            if(i % 8 >=4){
+                modelMatrices[i] = new Matrix4f().translate((i % 8 - 4.8f) * 6f, -14.25f, (i/10 +7f) * 6f)
+                        .rotate(110, 0f, 1f, 0f)
+                        .scale(0.05f);
+            }else{
+                modelMatrices[i] = new Matrix4f().translate((i % 8 - 6.2f) * 6f, -14.25f, (i/10 +7f) * 6f)
+                        .rotate(110, 0f, 1f, 0f)
+                        .scale(0.05f);
+            }
         }
        
         for(int i=0; i< NUMBER_OF_INSTANCES; i++){
@@ -684,7 +690,7 @@ public class ProjectOpenGL {
 
         // animate variables
         if (animate) {
-            t += 0.03f;
+            t += 0.002f;
         }
 
         glPolygonMode(GL_FRONT_AND_BACK, mode);
@@ -712,13 +718,23 @@ public class ProjectOpenGL {
         }
         
         //SmallCARPET
-       drawModelWithTex(new Matrix4f().translate(0, -14.90f, 35).rotate((float)Math.toRadians(90), 1f, 0f, 0f)
-               .scale(5f, 20f, 1f), view, projection, quadArray, 0, 6, null, carpetTexture);
+       drawModelWithTex(new Matrix4f().translate(0, -14.90f, 32).rotate((float)Math.toRadians(90), 1f, 0f, 0f)
+               .scale(5f, 16f, 1f), view, projection, quadArray, 0, 6, null, carpetTexture);
         
         //Main CARPET
-        drawModelWithTex(new Matrix4f().translate(0, -15, 35).rotate((float)Math.toRadians(90), 1f, 0f, 0f).scale(25f, 20f, 1f), view, projection, quadArray, 0, 6, null, floorTexture);
+        drawModelWithTex(new Matrix4f().translate(0, -15, 18).rotate((float)Math.toRadians(90), 1f, 0f, 0f).scale(30f, 30f, 1f), view, projection, quadArray, 0, 6, null, floorTexture);
         
-        //drawModelWithTex(new Matrix4f().translate(0, -15, 37).scale(30f,0.2f, 20f).rotate(90, 0f, 0f, 1f), view, projection, quadArray, 0, 36, null, floorTexture, floorTexLoc);
+        //LEFT wall
+        drawModelWithTex(new Matrix4f().translate(-30, 10, 18).rotate((float)Math.toRadians(90), 0f, 1f, 0f).scale(30f, 25f, 1f), view, projection, quadArray, 0, 36, null, floorTexture);
+        
+        //RIGHT wall
+        drawModelWithTex(new Matrix4f().translate(30, 10, 18).rotate((float)Math.toRadians(90), 0f, 1f, 0f).scale(30f, 25f, 1f), view, projection, quadArray, 0, 36, null, floorTexture);
+        
+        //behind = rear wall
+        drawModelWithTex(new Matrix4f().translate(0, 10, -12).scale(30f, 25f, 1f), view, projection, quadArray, 0, 36, null, floorTexture);
+        
+        //ceil
+        drawModelWithTex(new Matrix4f().translate(0, 35, 18).rotate((float)Math.toRadians(90), 1f, 0f, 0f).scale(30f, 30f, 1f), view, projection, quadArray, 0, 6, null, floorTexture);
         
         
         
