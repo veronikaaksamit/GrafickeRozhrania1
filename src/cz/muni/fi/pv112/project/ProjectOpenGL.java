@@ -100,6 +100,7 @@ public class ProjectOpenGL {
     private int curtainTexture;
     private int carpetTexture;
     private int sceneTexture;
+    private int wallTexture;
     //</editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="TEXTURE LOCATIONS">
@@ -363,6 +364,7 @@ public class ProjectOpenGL {
             carpetTexture = loadTexture("/resources/textures/gold.jpg");
             sceneTexture = loadTexture("/resources/textures/flies3.jpg");
             curtainTexture = loadTexture("/resources/textures/curtains.jpg");
+            wallTexture = loadTexture("/resources/textures/wall.jpg");
             
         } catch (IOException ex) {
             Logger.getLogger(ProjectOpenGL.class.getName()).log(Level.SEVERE, null, ex);
@@ -455,7 +457,7 @@ public class ProjectOpenGL {
         }
        
         for(int i=0; i< NUMBER_OF_INSTANCES; i++){
-            seatColors[i] = new Vector4f(0.126f, 0.150f, 0.200f, 1f);
+            seatColors[i] = new Vector4f(1f, 0f, 0f, 1f);
             
         }
         
@@ -769,16 +771,16 @@ public class ProjectOpenGL {
         drawModelWithTex(new Matrix4f().translate(0, -15, 18).rotate((float)Math.toRadians(90), 1f, 0f, 0f).scale(30f, 30f, 1f), view, projection, quadArray, 0, 6, null, floorTexture);
         
         //LEFT wall
-        drawModelWithTex(new Matrix4f().translate(-30, 10, 18).rotate((float)Math.toRadians(90), 0f, 1f, 0f).scale(30f, 25f, 1f), view, projection, quadArray, 0, 36, null, floorTexture);
+        drawModelWithTex(new Matrix4f().translate(-30, 10, 18).rotate((float)Math.toRadians(90), 0f, 1f, 0f).scale(30f, 25f, 1f), view, projection, quadArray, 0, 36, null, wallTexture);
         
         //RIGHT wall
-        drawModelWithTex(new Matrix4f().translate(30, 10, 18).rotate((float)Math.toRadians(90), 0f, 1f, 0f).scale(30f, 25f, 1f), view, projection, quadArray, 0, 36, null, floorTexture);
+        drawModelWithTex(new Matrix4f().translate(30, 10, 18).rotate((float)Math.toRadians(90), 0f, 1f, 0f).scale(30f, 25f, 1f), view, projection, quadArray, 0, 36, null, wallTexture);
         
         //behind = rear wall
-        drawModelWithTex(new Matrix4f().translate(0, 10, -12).scale(30f, 25f, 1f), view, projection, quadArray, 0, 36, null, floorTexture);
+        drawModelWithTex(new Matrix4f().translate(0, 10, -12).scale(30f, 25f, 1f), view, projection, quadArray, 0, 36, null, wallTexture);
         
         //ceil
-        drawModelWithTex(new Matrix4f().translate(0, 35, 18).rotate((float)Math.toRadians(90), 1f, 0f, 0f).scale(30f, 30f, 1f), view, projection, quadArray, 0, 6, null, floorTexture);
+        drawModelWithTex(new Matrix4f().translate(0, 35, 18).rotate((float)Math.toRadians(90), 1f, 0f, 0f).scale(30f, 30f, 1f), view, projection, quadArray, 0, 6, null, wallTexture);
         
         //left vase
         drawModel(new Matrix4f().translate(-21, -10, 14).scale(2f), view, projection, vaseArray, vase.getTriangleCount() * 3, null, 1);
