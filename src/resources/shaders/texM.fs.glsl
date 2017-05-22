@@ -19,17 +19,17 @@ uniform vec3 materialDiffuseColor;
 uniform vec3 materialSpecularColor;
 uniform float materialShininess;
 
-uniform sampler2D floorTex;
+uniform sampler2D myTexture;
 
 vec3 phong(vec3 matAmbientColor, vec3 matDiffuseColor, vec3 matSpecularColor, float matShininess);
 
 void main() {
     
-    vec3 mixColor = texture(floorTex, vTexCoord).rgb;
+    vec3 mixColor = texture(myTexture, vTexCoord).rgb;
 
     vec3 color = phong(mixColor, mixColor, materialSpecularColor, materialShininess);
 // (opacity) from 100% to 40% (range is 0.0-1.0)
-    fragColor = vec4(color*0.7, 1);
+    fragColor = vec4(color, 1);
 }
 
 /*

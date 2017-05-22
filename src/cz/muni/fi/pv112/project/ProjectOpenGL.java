@@ -50,52 +50,18 @@ public class ProjectOpenGL {
     
     private static SoundThread soundThread;
     private static Thread threadS;
-    
-    private static final float CUBE[] = {
-        // .. position ................ normal ....
-        // front face
-        -1.0f,  1.0f,  1.0f,     0.0f,  0.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f,     0.0f,  0.0f,  1.0f,
-         1.0f, -1.0f,  1.0f,     0.0f,  0.0f,  1.0f,
-        -1.0f,  1.0f,  1.0f,     0.0f,  0.0f,  1.0f,
-         1.0f, -1.0f,  1.0f,     0.0f,  0.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,     0.0f,  0.0f,  1.0f,
-        // right face
-         1.0f,  1.0f,  1.0f,     1.0f,  0.0f,  0.0f,
-         1.0f, -1.0f,  1.0f,     1.0f,  0.0f,  0.0f,
-         1.0f, -1.0f, -1.0f,     1.0f,  0.0f,  0.0f,
-         1.0f,  1.0f,  1.0f,     1.0f,  0.0f,  0.0f,
-         1.0f, -1.0f, -1.0f,     1.0f,  0.0f,  0.0f,
-         1.0f,  1.0f, -1.0f,     1.0f,  0.0f,  0.0f,
-        // back face
-         1.0f,  1.0f, -1.0f,     0.0f,  0.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,     0.0f,  0.0f, -1.0f,
-        -1.0f, -1.0f, -1.0f,     0.0f,  0.0f, -1.0f,
-         1.0f,  1.0f, -1.0f,     0.0f,  0.0f, -1.0f,
-        -1.0f, -1.0f, -1.0f,     0.0f,  0.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,     0.0f,  0.0f, -1.0f,
-        // left face
-        -1.0f,  1.0f, -1.0f,    -1.0f,  0.0f,  0.0f,
-        -1.0f, -1.0f, -1.0f,    -1.0f,  0.0f,  0.0f,
-        -1.0f, -1.0f,  1.0f,    -1.0f,  0.0f,  0.0f,
-        -1.0f,  1.0f, -1.0f,    -1.0f,  0.0f,  0.0f,
-        -1.0f, -1.0f,  1.0f,    -1.0f,  0.0f,  0.0f,
-        -1.0f,  1.0f,  1.0f,    -1.0f,  0.0f,  0.0f,
-        // top face
-        -1.0f,  1.0f, -1.0f,     0.0f,  1.0f,  0.0f,
-        -1.0f,  1.0f,  1.0f,     0.0f,  1.0f,  0.0f,
-         1.0f,  1.0f,  1.0f,     0.0f,  1.0f,  0.0f,
-        -1.0f,  1.0f, -1.0f,     0.0f,  1.0f,  0.0f,
-         1.0f,  1.0f,  1.0f,     0.0f,  1.0f,  0.0f,
-         1.0f,  1.0f, -1.0f,     0.0f,  1.0f,  0.0f,
-        // bottom face
-        -1.0f, -1.0f,  1.0f,     0.0f, -1.0f,  0.0f,
-        -1.0f, -1.0f, -1.0f,     0.0f, -1.0f,  0.0f,
-         1.0f, -1.0f, -1.0f,     0.0f, -1.0f,  0.0f,
-        -1.0f, -1.0f,  1.0f,     0.0f, -1.0f,  0.0f,
-         1.0f, -1.0f, -1.0f,     0.0f, -1.0f,  0.0f,
-         1.0f, -1.0f,  1.0f,     0.0f, -1.0f,  0.0f,
+    private static final float QUAD[] =
+    {
+            //       Position                 Normal             Tex Coord
+            // Front face
+            -1.0f, 1.0f, 0.0f,		 0.0f, 0.0f, 1.0f,		0.0f, 1.0f,
+            -1.0f,-1.0f, 0.0f,		 0.0f, 0.0f, 1.0f,		0.0f, 0.0f,
+            1.0f,-1.0f, 0.0f,		 0.0f, 0.0f, 1.0f,		1.0f, 0.0f,
+            -1.0f, 1.0f, 0.0f,		 0.0f, 0.0f, 1.0f,		0.0f, 1.0f,
+            1.0f,-1.0f, 0.0f,		 0.0f, 0.0f, 1.0f,		1.0f, 0.0f,
+            1.0f, 1.0f, 0.0f,		 0.0f, 0.0f, 1.0f,		1.0f, 1.0f,
     };
+
     
     private static final int SIZEOF_MODEL_VERTEX = 6 * Float.BYTES;
     private static final int NORMAL_OFFSET = 3 * Float.BYTES;
@@ -128,11 +94,17 @@ public class ProjectOpenGL {
     private ObjLoader seat;
     // </editor-fold>
     
+    // <editor-fold defaultstate="collapsed" desc="TEXTURES">
     private int floorTexture;
     private int curtainTexture;
+    private int carpetTexture;
+    private int wallTexture;
+    //</editor-fold>
     
-    private int floorTexLoc;
-    private int curtainTexLoc;
+    // <editor-fold defaultstate="collapsed" desc="TEXTURE LOCATIONS">
+    private int textureLoc;
+    private int repeatTextureLoc;
+    //</editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="BUFFERS for models">
     private int ballerinaBuffer;
@@ -140,7 +112,7 @@ public class ProjectOpenGL {
     private int lCurtainBuffer;
     private int rCurtainBuffer;
     private int seatBuffer;
-    private int cubeBuffer;
+    private int quadBuffer;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="ARRAYS for models">
@@ -149,7 +121,7 @@ public class ProjectOpenGL {
     private int lCurtainArray;
     private int rCurtainArray;
     private int seatArray;
-    private int cubeArray;
+    private int quadArray;
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="PROGRAMS"> 
@@ -192,6 +164,7 @@ public class ProjectOpenGL {
     private int materialShininessLoc;
 
     private int eyePositionLoc;
+    private int flagLoc;
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="model program uniform locations for TEXM SHADERS">
@@ -371,9 +344,10 @@ public class ProjectOpenGL {
         
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glEnable(GL_CULL_FACE);
+        //glEnable(GL_CULL_FACE);
         
 
+        
         // load GLSL program (vertex and fragment shaders)
         try {
             seatProgram = loadProgram("/resources/shaders/seat.vs.glsl",
@@ -382,13 +356,17 @@ public class ProjectOpenGL {
                     "/resources/shaders/model.fs.glsl");
             texMProgram = loadProgram("/resources/shaders/texM.vs.glsl",
                     "/resources/shaders/texM.fs.glsl");
-            floorTexture = loadTexture("/resources/textures/curtains.jpg");
+            floorTexture = loadTexture("/resources/textures/carpet3.jpg");
+            carpetTexture = loadTexture("/resources/textures/gold.jpg");
+            wallTexture = loadTexture("/resources/textures/wall.jpg");
+            curtainTexture = loadTexture("/resources/textures/curtains.jpg");
+            
         } catch (IOException ex) {
             Logger.getLogger(ProjectOpenGL.class.getName()).log(Level.SEVERE, null, ex);
             System.exit(1);
         }
         
-        
+        // <editor-fold defaultstate="collapsed" desc="TexMPROGRAM - GETTING UNIFORM LOC">
         texMMvpLoc = glGetUniformLocation(texMProgram, "MVP");
         texMNLoc = glGetUniformLocation(texMProgram, "N");
         texMModelLoc = glGetUniformLocation(texMProgram, "model");
@@ -405,15 +383,14 @@ public class ProjectOpenGL {
         texMMaterialSpecularColorLoc = glGetUniformLocation(texMProgram, "materialSpecularColor");
         texMMaterialShininessLoc = glGetUniformLocation(texMProgram, "materialShininess");
 
-        floorTexLoc = glGetUniformLocation(texMProgram, "floorTex");
-        //rocksTexLoc = glGetUniformLocation(texMProgram, "rocksTex");
-        //diceTexLoc = glGetUniformLocation(texMProgram, "diceTex");
+        repeatTextureLoc = glGetUniformLocation(texMProgram, "repeat");
+        textureLoc = glGetUniformLocation(texMProgram, "myTexture");
         
-        
-        
+        //</editor-fold>
         
         ////////////////////////////////////////////////////
 
+        // <editor-fold defaultstate="collapsed" desc="ModelPROGRAM - GETTING UNIFORM LOC">
         // model program uniforms
         modelMvpUniformLoc = glGetUniformLocation(modelProgram, "MVP");
         modelNUniformLoc = glGetUniformLocation(modelProgram, "N");
@@ -439,8 +416,12 @@ public class ProjectOpenGL {
         materialDiffuseColorLoc = glGetUniformLocation(modelProgram, "materialDiffuseColor");
         materialSpecularColorLoc = glGetUniformLocation(modelProgram, "materialSpecularColor");
         materialShininessLoc = glGetUniformLocation(modelProgram, "materialShininess");
+        flagLoc = glGetUniformLocation(modelProgram, "flag");
+        //</editor-fold>
         
         //////////////////////////////////////////////////////////////////////////
+        
+        // <editor-fold defaultstate="collapsed" desc="SeatPROGRAM - GETTING UNIFORM LOC">
         //SEATS
         seatMvpLoc = glGetUniformLocation(seatProgram, "MVP");
         seatNLoc = glGetUniformLocation(seatProgram, "N");
@@ -455,7 +436,9 @@ public class ProjectOpenGL {
         seatLightSpecularColorLoc = glGetUniformLocation(seatProgram, "lightSpecularColor");
         
         seatEyePositionLoc = glGetUniformLocation(seatProgram, "eyePosition");
+        //</editor-fold>
 
+        
         for(int i=0; i< NUMBER_OF_INSTANCES; i++){
             modelMatrices[i] = new Matrix4f().translate((i % 8 - 5.5f) * 6f, -14.25f, (i/10 +7f) * 6f)
                     .rotate(110, 0f, 1f, 0f)
@@ -475,7 +458,7 @@ public class ProjectOpenGL {
         seatBuffer = buffers[2];
         lCurtainBuffer = buffers[3];
         rCurtainBuffer = buffers[4];
-        cubeBuffer = buffers[5];
+        quadBuffer = buffers[5];
 
         // load and fill object data
         ballerina = new ObjLoader("/resources/models/ballerina.obj");
@@ -495,20 +478,24 @@ public class ProjectOpenGL {
         }
         
         
-        glBindBuffer(GL_ARRAY_BUFFER, cubeBuffer);
-        glBufferData(GL_ARRAY_BUFFER, CUBE, GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, quadBuffer);
+        glBufferData(GL_ARRAY_BUFFER, QUAD, GL_STATIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         
-        int length = 3 * 6 * lCurtain.getTriangleCount();
+        // <editor-fold defaultstate="collapsed" desc="LEFT CURTAIN Binding data to buffer">
+        int length = 3 * 8 * lCurtain.getTriangleCount();
         FloatBuffer lCurtainData = BufferUtils.createFloatBuffer(length);
         for (int f = 0; f < this.lCurtain.getTriangleCount(); f++) {
             int[] pi = this.lCurtain.getVertexIndices().get(f);
             int[] ni = this.lCurtain.getNormalIndices().get(f);
+            int[] ti = this.lCurtain.getTexcoordIndices().get(f);
             for (int i = 0; i < 3; i++) {
                 float[] position = this.lCurtain.getVertices().get(pi[i]);
                 float[] normal = this.lCurtain.getNormals().get(ni[i]);
+                float[] texCoord = this.lCurtain.getTexcoords().get(ti[i]);
                 lCurtainData.put(position);
                 lCurtainData.put(normal);
+                lCurtainData.put(texCoord);
             }
         }
         lCurtainData.rewind();
@@ -516,17 +503,22 @@ public class ProjectOpenGL {
         glBufferData(GL_ARRAY_BUFFER, lCurtainData, GL_STATIC_DRAW);
         // clear buffer binding
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+        //</editor-fold>
         
-        length = 3 * 6 * rCurtain.getTriangleCount();
+        // <editor-fold defaultstate="collapsed" desc="RIGHT CURTAIN Binding data to buffer">
+        length = 3 * 8 * rCurtain.getTriangleCount();
         FloatBuffer rCurtainData = BufferUtils.createFloatBuffer(length);
         for (int f = 0; f < this.rCurtain.getTriangleCount(); f++) {
             int[] pi = this.rCurtain.getVertexIndices().get(f);
             int[] ni = this.rCurtain.getNormalIndices().get(f);
+            int[] ti = this.rCurtain.getTexcoordIndices().get(f);
             for (int i = 0; i < 3; i++) {
                 float[] position = this.rCurtain.getVertices().get(pi[i]);
                 float[] normal = this.rCurtain.getNormals().get(ni[i]);
+                float[] texCoord = this.rCurtain.getTexcoords().get(ti[i]);
                 rCurtainData.put(position);
                 rCurtainData.put(normal);
+                rCurtainData.put(texCoord);
             }
         }
         rCurtainData.rewind();
@@ -534,9 +526,9 @@ public class ProjectOpenGL {
         glBufferData(GL_ARRAY_BUFFER, rCurtainData, GL_STATIC_DRAW);
         // clear buffer binding
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // </editor-fold>
         
-        
-        
+        // <editor-fold defaultstate="collapsed" desc="BALLERINA Binding data to buffer">
         length = 3 * 6 * ballerina.getTriangleCount();
         FloatBuffer ballerinaData = BufferUtils.createFloatBuffer(length);
         for (int f = 0; f < this.ballerina.getTriangleCount(); f++) {
@@ -554,17 +546,22 @@ public class ProjectOpenGL {
         glBufferData(GL_ARRAY_BUFFER, ballerinaData, GL_STATIC_DRAW);
         // clear buffer binding
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // </editor-fold>
         
-        length = 3 * 6 * scene.getTriangleCount();
+        // <editor-fold defaultstate="collapsed" desc="SCENE Binding data to buffer">
+        length = 3 * 8 * scene.getTriangleCount();
         FloatBuffer sceneData = BufferUtils.createFloatBuffer(length);
         for (int f = 0; f < this.scene.getTriangleCount(); f++) {
             int[] pi = this.scene.getVertexIndices().get(f);
             int[] ni = this.scene.getNormalIndices().get(f);
+            int[] ti = this.scene.getTexcoordIndices().get(f);
             for (int i = 0; i < 3; i++) {
                 float[] position = this.scene.getVertices().get(pi[i]);
                 float[] normal = this.scene.getNormals().get(ni[i]);
+                float[] texcoord = this.scene.getTexcoords().get(ni[i]);
                 sceneData.put(position);
                 sceneData.put(normal);
+                sceneData.put(texcoord);
             }
         }
         sceneData.rewind();
@@ -572,7 +569,9 @@ public class ProjectOpenGL {
         glBufferData(GL_ARRAY_BUFFER, sceneData, GL_STATIC_DRAW);
         // clear buffer binding
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // </editor-fold>
         
+        // <editor-fold defaultstate="collapsed" desc="SEAT Binding data to buffer">
         int seatLength = 3 * 8 * seat.getTriangleCount();
         FloatBuffer seatData = BufferUtils.createFloatBuffer(seatLength);
         for (int f = 0; f < seat.getTriangleCount(); f++) {
@@ -588,9 +587,9 @@ public class ProjectOpenGL {
         seatData.rewind();
         glBindBuffer(GL_ARRAY_BUFFER, seatBuffer);
         glBufferData(GL_ARRAY_BUFFER, seatData, GL_STATIC_DRAW);
-
-        // clear buffer binding, so that other code doesn't presume it (easier error detection)
+        // clear buffer binding
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // </editor-fold>
 
         // create a vertex array object for the geometry
         int[] arrays = new int[6];
@@ -600,12 +599,11 @@ public class ProjectOpenGL {
         seatArray = arrays[2];
         lCurtainArray = arrays[3];
         rCurtainArray = arrays[4];
-        cubeArray = arrays[5];
+        quadArray = arrays[5];
 
-        int positionAttribLoc;
 
         // get model program attributes
-        positionAttribLoc = glGetAttribLocation(modelProgram, "position");
+        int positionAttribLoc = glGetAttribLocation(modelProgram, "position");
         int normalAttribLoc = glGetAttribLocation(modelProgram, "normal");
 
         // bind ballerinaData buffer
@@ -620,37 +618,44 @@ public class ProjectOpenGL {
         glBindVertexArray(sceneArray);
         glBindBuffer(GL_ARRAY_BUFFER, sceneBuffer);
         glEnableVertexAttribArray(positionAttribLoc);
-        glVertexAttribPointer(positionAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, 0);
+        glVertexAttribPointer(positionAttribLoc, 3, GL_FLOAT, false,8*Float.BYTES , 0);
         glEnableVertexAttribArray(normalAttribLoc);
-        glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, NORMAL_OFFSET);
+        glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false, 8*Float.BYTES, NORMAL_OFFSET);
         
         
         positionAttribLoc = glGetAttribLocation(texMProgram, "position");
         normalAttribLoc = glGetAttribLocation(texMProgram, "normal");
+        int texAttribLoc = glGetAttribLocation(texMProgram, "texcoord");
         
         // bind leftCurtain buffer
         glBindVertexArray(lCurtainArray);
         glBindBuffer(GL_ARRAY_BUFFER, lCurtainBuffer);
         glEnableVertexAttribArray(positionAttribLoc);
-        glVertexAttribPointer(positionAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, 0);
+        glVertexAttribPointer(positionAttribLoc, 3, GL_FLOAT, false,  8*Float.BYTES, 0);
         glEnableVertexAttribArray(normalAttribLoc);
-        glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, NORMAL_OFFSET);
+        glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false,  8*Float.BYTES, NORMAL_OFFSET);
+        glEnableVertexAttribArray(texAttribLoc);
+        glVertexAttribPointer(texAttribLoc, 2, GL_FLOAT, false, 8*Float.BYTES, 6*Float.BYTES);
         
         // bind rightCurtain buffer
         glBindVertexArray(rCurtainArray);
         glBindBuffer(GL_ARRAY_BUFFER, rCurtainBuffer);
         glEnableVertexAttribArray(positionAttribLoc);
-        glVertexAttribPointer(positionAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, 0);
+        glVertexAttribPointer(positionAttribLoc, 3, GL_FLOAT, false,  8*Float.BYTES, 0);
         glEnableVertexAttribArray(normalAttribLoc);
-        glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, NORMAL_OFFSET);
+        glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false,  8*Float.BYTES, NORMAL_OFFSET);
+        glEnableVertexAttribArray(texAttribLoc);
+        glVertexAttribPointer(texAttribLoc, 2, GL_FLOAT, false, 8*Float.BYTES, 6*Float.BYTES);
         
         
-        glBindVertexArray(cubeArray);
-        glBindBuffer(GL_ARRAY_BUFFER, cubeBuffer);
+        glBindVertexArray(quadArray);
+        glBindBuffer(GL_ARRAY_BUFFER, quadBuffer);
         glEnableVertexAttribArray(positionAttribLoc);
-        glVertexAttribPointer(positionAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, 0);
+        glVertexAttribPointer(positionAttribLoc, 3, GL_FLOAT, false,  8*Float.BYTES, 0);
         glEnableVertexAttribArray(normalAttribLoc);
-        glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, NORMAL_OFFSET);
+        glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false,  8*Float.BYTES, NORMAL_OFFSET);
+        glEnableVertexAttribArray(texAttribLoc);
+        glVertexAttribPointer(texAttribLoc, 2, GL_FLOAT, false, 8*Float.BYTES, 6*Float.BYTES);
         
         
         positionAttribLoc = glGetAttribLocation(seatProgram, "position");
@@ -692,41 +697,46 @@ public class ProjectOpenGL {
         Matrix4f view = new Matrix4f()
                 .lookAt(camera.getEyePosition(), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0));
 
+        
+        
+        
+        
         //drawing curtains 
         Material matCurtain = new Material(new Vector3f(0.33f, 0.22f, 0.03f), new Vector3f(0.4f, 0.11f, 0.1f), new Vector3f(0.4f, 0.2f, 0.2f), 27.90f);      
         if(t <1f){
-             drawModelWithTex(new Matrix4f().translate(0, 15, 0).scale(6f).scale(1f, -1f + t , 1f), view, projection, lCurtainArray, 0, lCurtain.getTriangleCount() * 3, null, floorTexture, floorTexLoc);
+             drawModelWithTex(new Matrix4f().translate(0, 15, 0).scale(6f).scale(1f, -1f + t , 1f), view, projection, lCurtainArray, 0, lCurtain.getTriangleCount() * 3, null, curtainTexture);
         }
        
         if(t <1f){
-             drawModelWithTex(new Matrix4f().translate(0, 15, 0).scale(6f).scale(1f, -1f + t , 1f), view, projection, rCurtainArray, 0, rCurtain.getTriangleCount() * 3, matCurtain, floorTexture, floorTexLoc);
+             drawModelWithTex(new Matrix4f().translate(0, 15, 0).scale(6f).scale(1f, -1f + t , 1f), view, projection, rCurtainArray, 0, rCurtain.getTriangleCount() * 3, matCurtain, curtainTexture);
         }
         
         //SmallCARPET
-        drawModelWithTex(new Matrix4f().translate(0, -15.01f, 35).scale(5f,0.2f, 18f), view, projection, cubeArray, 0, 36, null, floorTexture, floorTexLoc);
+       drawModelWithTex(new Matrix4f().translate(0, -14.90f, 35).rotate((float)Math.toRadians(90), 1f, 0f, 0f)
+               .scale(5f, 20f, 1f), view, projection, quadArray, 0, 6, null, carpetTexture);
         
         //Main CARPET
-        drawModelWithTex(new Matrix4f().translate(0, -15, 35).scale(25f,0.2f, 18f), view, projection, cubeArray, 0, 36, null, floorTexture, floorTexLoc);
+        drawModelWithTex(new Matrix4f().translate(0, -15, 35).rotate((float)Math.toRadians(90), 1f, 0f, 0f).scale(25f, 20f, 1f), view, projection, quadArray, 0, 6, null, floorTexture);
         
-        //drawModelWithTex(new Matrix4f().translate(0, -15, 37).scale(30f,0.2f, 20f).rotate(90, 0f, 0f, 1f), view, projection, cubeArray, 0, 36, null, floorTexture, floorTexLoc);
+        //drawModelWithTex(new Matrix4f().translate(0, -15, 37).scale(30f,0.2f, 20f).rotate(90, 0f, 0f, 1f), view, projection, quadArray, 0, 36, null, floorTexture, floorTexLoc);
         
         
         
         //drawing SCENE 
         Material matScene = new Material(new Vector3f(0.25f), new Vector3f(0.15f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
-        drawModel(new Matrix4f().translate(0, -15, 0).scale(6f), view, projection, sceneArray, scene.getTriangleCount() * 3, matScene);
+        drawModel(new Matrix4f().translate(0, -15, 0).scale(6f), view, projection, sceneArray, scene.getTriangleCount() * 3, matScene,0);
         // drawing seats
         drawSeats(new Matrix4f(), view, projection, seatArray, seat.getTriangleCount() * 3);
 
         //drawing ballerinas
         Material matBalCenter = new Material(new Vector3f(0.33f, 0.22f, 0.03f), new Vector3f(0.78f, 0.57f, 0.11f), new Vector3f(0.99f, 0.94f, 0.81f), 27.90f);
-        drawModel(new Matrix4f().translate(0, -5.25f, -5).rotate(6*t, 0f, 1f, 0f), view.rotate(6*t, 0f, 1f, 0f), projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalCenter);
+        drawModel(new Matrix4f().translate(0, -5.25f, -5).rotate(6*t, 0f, 1f, 0f), view.rotate(6*t, 0f, 1f, 0f), projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalCenter,0);
 
         Material matBalLeft = new Material(new Vector3f(0.21f, 0.13f, 0.05f), new Vector3f(0.71f, 0.43f, 0.18f), new Vector3f(0.39f, 0.27f, 0.17f), 25.6f);
-        drawModel(new Matrix4f().translate(-5, -5.25f, 0).rotate(-30, 0f, 1f, 0f).rotate(6*t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalLeft);
+        drawModel(new Matrix4f().translate(-5, -5.25f, 0).rotate(-30, 0f, 1f, 0f).rotate(6*t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalLeft, 0);
 
         Material matBalRight = new Material(new Vector3f(0.25f), new Vector3f(0.4f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
-        drawModel(new Matrix4f().translate(5, -5.25f, 0).rotate(30, 0f, 1f, 0f).rotate(6*t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalRight);
+        drawModel(new Matrix4f().translate(5, -5.25f, 0).rotate(30, 0f, 1f, 0f).rotate(6*t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalRight, 0);
         
         
         
@@ -762,7 +772,7 @@ public class ProjectOpenGL {
         }
         
         //glUniformMatrix4fv(seatNLoc, false, modelData);      
-        
+//        
         glUniform4f(seatLightPositionLoc, 2, 5, 3, 1);
         glUniform3f(seatLightAmbientColorLoc, 0.3f, 0.3f, 0.3f);
         glUniform3f(seatLightDiffuseColorLoc, 1, 1, 1);
@@ -788,7 +798,7 @@ public class ProjectOpenGL {
     
     
     private void drawModelWithTex(Matrix4f model, Matrix4f view, Matrix4f projection, 
-            int vao, int offset, int count, Material material, int texture, int textureLoc) {
+            int vao, int offset, int count, Material material, int texture) {
         // compute model-view-projection matrix
         Matrix4f mvp = new Matrix4f(projection)
                 .mul(view)
@@ -801,6 +811,8 @@ public class ProjectOpenGL {
 
         glUseProgram(texMProgram);
         glBindVertexArray(vao); // bind vertex array to draw
+        
+        glUniform1f(repeatTextureLoc, 10);
 
         glUniform4f(texMLightPositionLoc, 0f, 5f, -5f, 1);
         glUniform3f(texMLightAmbientColorLoc, 0.3f, 0.3f, 0.3f);
@@ -816,23 +828,11 @@ public class ProjectOpenGL {
             glUniform1f(texMMaterialShininessLoc, material.getShininess());
         }
 
-        // Task 1:  set active texture to texture unit (TU) 0 using glActiveTexture(GL_TEXTURE0)
-        //          bind woodTexture to TU 0 using glBindTexture(GL_TEXTURE_2D, woodTexture)
-        //          assign TU 0 to woodTex sampler in GLSL program using glUniform1i(woodTexLoc, 0)
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, floorTexture);
-        glUniform1i(floorTexLoc, 0);
-
-        // Task 7:  set active texture to texture unit (TU) 1 using glActiveTexture(GL_TEXTURE1)
-        //          bind diceTexture to TU 1 using glBindTexture(GL_TEXTURE_2D, diceTexture)
-        //          assign TU 1 to diceTex sampler in GLSL program using glUniform1i(diceTexLoc, 1)
-        // Task 8:  set active texture to texture unit (TU) 2 using glActiveTexture(GL_TEXTURE2)
-        //          bind rocksTexture to TU 2 using glBindTexture(GL_TEXTURE_2D, rocksTexture)
-        //          assign TU 2 to rocksTex sampler in GLSL program using glUniform1i(rocksTexLoc, 2)
-        /*glActiveTexture(GL_TEXTURE1); 
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glUniform1i(textureLoc, 1);
         
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glUniform1i(textureLoc, 0);
+        /*
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, rocksTexture);
         glUniform1i(rocksTexLoc, 2);*/
@@ -855,7 +855,7 @@ public class ProjectOpenGL {
     }
     
 
-    private void drawModel(Matrix4f model, Matrix4f view, Matrix4f projection, int vao, int count, Material material) {
+    private void drawModel(Matrix4f model, Matrix4f view, Matrix4f projection, int vao, int count, Material material, int flag) {
         // compute model-view-projection matrix
         Matrix4f mvp = new Matrix4f(projection)
                 .mul(view)
@@ -869,16 +869,17 @@ public class ProjectOpenGL {
         glUseProgram(modelProgram);
         glBindVertexArray(vao); // bind vertex array to draw
 
+        glUniform1i(flagLoc, flag);
         //setting values for light 
         //light as a point light
         glUniform4f(lightPositionLoc1, 0, 40, 0, 1);
-        glUniform3f(lightAmbientColorLoc1, 0.15f, 0.15f, 0.15f);
+        glUniform3f(lightAmbientColorLoc1, 0.5f, 0.5f, 0.5f);
         glUniform3f(lightDiffuseColorLoc1, 1, 1, 1);
         glUniform3f(lightSpecularColorLoc1, 1, 1, 1);
         
         //second light
-        glUniform4f(lightPositionLoc2, 0, 0, -20, 1);
-        glUniform3f(lightAmbientColorLoc2, 0.15f, 0.15f, 0.15f);
+        glUniform4f(lightPositionLoc2, 0, 5, -2, 0);
+        glUniform3f(lightAmbientColorLoc2, 0.45f, 0.45f, 0.45f);
         glUniform3f(lightDiffuseColorLoc2, 1, 1, 1);
         glUniform3f(lightSpecularColorLoc2, 1, 1, 1);
 
@@ -1010,12 +1011,12 @@ public class ProjectOpenGL {
         //              T direction: glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT)
         //              also try other modes, listed in the attached PDF :)
         
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);        
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);        
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 
         // unbind texture
         glBindTexture(GL_TEXTURE_2D, 0);

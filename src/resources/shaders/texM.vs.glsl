@@ -9,6 +9,7 @@ out vec3 vPosition;
 
 out vec2 vTexCoord;
 
+uniform float repeat;
 uniform mat4 MVP; // model-view-projection matrix
 uniform mat3 N; // transpose of inversed model matrix
 uniform mat4 model; // model matrix
@@ -18,8 +19,8 @@ void main() {
     vPosition = vec3(model * vec4(position, 1.0));
 
     //can transform the texcoord from range [0.0, 1.0] to [-2.0, 2.0], by multiplication and addition
-
-    vTexCoord = texcoord;
+    
+    vTexCoord = texcoord * repeat;
 
     gl_Position = MVP * vec4(position, 1.0);
 }
