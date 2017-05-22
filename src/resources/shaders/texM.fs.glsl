@@ -21,7 +21,27 @@ uniform float materialShininess;
 
 uniform sampler2D myTexture;
 
+
+struct SpotLight
+{
+    vec3 position;
+    vec3 direction;
+    float cutOff;
+    float outerCutOff;
+
+    float constant;
+    float linear;
+    float quadratic;
+
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+
+uniform SpotLight spotLight;
+
 vec3 phong(vec3 matAmbientColor, vec3 matDiffuseColor, vec3 matSpecularColor, float matShininess);
+vec3 CalcSpotLight( SpotLight light, vec3 normal, vec3 fragPos, vec3 color);
 
 void main() {
     
@@ -29,7 +49,10 @@ void main() {
 
     vec3 color = phong(mixColor, mixColor, materialSpecularColor, materialShininess);
 // (opacity) from 100% to 40% (range is 0.0-1.0)
-    fragColor = vec4(color, 1);
+    
+    vec3 color1 = CalcSpotLight( spotLight, vNormal, vPosition, mixColor );
+
+    fragColor = vec4(color + color1, 1);
 }
 
 /*
@@ -57,4 +80,37 @@ vec3 phong(vec3 matAmbientColor, vec3 matDiffuseColor, vec3 matSpecularColor, fl
     vec3 specular = lightSpecularColor * matSpecularColor * specularFactor;
 
     return ambient + diffuse + specular;
+}
+
+vec3 CalcSpotLight( SpotLight light, vec3 normal, vec3 fragPos, vec3 color )
+{
+    vec3 lightDir = normalize( light.position - fragPos );
+    vec3 viewDir = normalize(fragPos - light.position);
+
+    // Diffuse shading
+    float diff = max( dot( normal, lightDir ), 0.0 );
+
+    // Specular shading
+    vec3 reflectDir = reflect( -lightDir, normal );
+    float spec = pow( max( dot( viewDir, reflectDir ), 0.0 ), materialShininess);
+
+    // Attenuation
+    float distance = length( light.position - fragPos );
+    float attenuation = 1;// ( light.constant + light.linear * distance + light.quadratic * ( distance * distance ) );
+
+    // Spotlight intensity
+    float theta = dot( lightDir, normalize( -light.direction ) );
+    float epsilon = light.cutOff - light.outerCutOff;
+    float intensity = clamp( ( theta - light.outerCutOff ) / epsilon, 0.0, 1.0 );
+
+    // Combine results
+    vec3 ambient = light.ambient *color;
+    vec3 diffuse = light.diffuse * diff * color;
+    vec3 specular = light.specular * spec * materialSpecularColor;
+
+    ambient *= attenuation * intensity;
+    diffuse *= attenuation * intensity;
+    specular *= attenuation * intensity;
+
+    return ( ambient + diffuse + specular );
 }
