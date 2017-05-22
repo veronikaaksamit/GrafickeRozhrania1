@@ -51,6 +51,52 @@ public class ProjectOpenGL {
     private static SoundThread soundThread;
     private static Thread threadS;
     
+    private static final float CUBE[] = {
+        // .. position ................ normal ....
+        // front face
+        -1.0f,  1.0f,  1.0f,     0.0f,  0.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,     0.0f,  0.0f,  1.0f,
+         1.0f, -1.0f,  1.0f,     0.0f,  0.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,     0.0f,  0.0f,  1.0f,
+         1.0f, -1.0f,  1.0f,     0.0f,  0.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,     0.0f,  0.0f,  1.0f,
+        // right face
+         1.0f,  1.0f,  1.0f,     1.0f,  0.0f,  0.0f,
+         1.0f, -1.0f,  1.0f,     1.0f,  0.0f,  0.0f,
+         1.0f, -1.0f, -1.0f,     1.0f,  0.0f,  0.0f,
+         1.0f,  1.0f,  1.0f,     1.0f,  0.0f,  0.0f,
+         1.0f, -1.0f, -1.0f,     1.0f,  0.0f,  0.0f,
+         1.0f,  1.0f, -1.0f,     1.0f,  0.0f,  0.0f,
+        // back face
+         1.0f,  1.0f, -1.0f,     0.0f,  0.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,     0.0f,  0.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,     0.0f,  0.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,     0.0f,  0.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,     0.0f,  0.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,     0.0f,  0.0f, -1.0f,
+        // left face
+        -1.0f,  1.0f, -1.0f,    -1.0f,  0.0f,  0.0f,
+        -1.0f, -1.0f, -1.0f,    -1.0f,  0.0f,  0.0f,
+        -1.0f, -1.0f,  1.0f,    -1.0f,  0.0f,  0.0f,
+        -1.0f,  1.0f, -1.0f,    -1.0f,  0.0f,  0.0f,
+        -1.0f, -1.0f,  1.0f,    -1.0f,  0.0f,  0.0f,
+        -1.0f,  1.0f,  1.0f,    -1.0f,  0.0f,  0.0f,
+        // top face
+        -1.0f,  1.0f, -1.0f,     0.0f,  1.0f,  0.0f,
+        -1.0f,  1.0f,  1.0f,     0.0f,  1.0f,  0.0f,
+         1.0f,  1.0f,  1.0f,     0.0f,  1.0f,  0.0f,
+        -1.0f,  1.0f, -1.0f,     0.0f,  1.0f,  0.0f,
+         1.0f,  1.0f,  1.0f,     0.0f,  1.0f,  0.0f,
+         1.0f,  1.0f, -1.0f,     0.0f,  1.0f,  0.0f,
+        // bottom face
+        -1.0f, -1.0f,  1.0f,     0.0f, -1.0f,  0.0f,
+        -1.0f, -1.0f, -1.0f,     0.0f, -1.0f,  0.0f,
+         1.0f, -1.0f, -1.0f,     0.0f, -1.0f,  0.0f,
+        -1.0f, -1.0f,  1.0f,     0.0f, -1.0f,  0.0f,
+         1.0f, -1.0f, -1.0f,     0.0f, -1.0f,  0.0f,
+         1.0f, -1.0f,  1.0f,     0.0f, -1.0f,  0.0f,
+    };
+    
     private static final int SIZEOF_MODEL_VERTEX = 6 * Float.BYTES;
     private static final int NORMAL_OFFSET = 3 * Float.BYTES;
     private static final int NUMBER_OF_INSTANCES = 50;
@@ -94,6 +140,7 @@ public class ProjectOpenGL {
     private int lCurtainBuffer;
     private int rCurtainBuffer;
     private int seatBuffer;
+    private int cubeBuffer;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="ARRAYS for models">
@@ -102,6 +149,7 @@ public class ProjectOpenGL {
     private int lCurtainArray;
     private int rCurtainArray;
     private int seatArray;
+    private int cubeArray;
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="PROGRAMS"> 
@@ -334,7 +382,7 @@ public class ProjectOpenGL {
                     "/resources/shaders/model.fs.glsl");
             texMProgram = loadProgram("/resources/shaders/texM.vs.glsl",
                     "/resources/shaders/texM.fs.glsl");
-            floorTexture = loadTexture("/resources/textures/wood.jpg");
+            floorTexture = loadTexture("/resources/textures/curtains.jpg");
         } catch (IOException ex) {
             Logger.getLogger(ProjectOpenGL.class.getName()).log(Level.SEVERE, null, ex);
             System.exit(1);
@@ -409,7 +457,7 @@ public class ProjectOpenGL {
         seatEyePositionLoc = glGetUniformLocation(seatProgram, "eyePosition");
 
         for(int i=0; i< NUMBER_OF_INSTANCES; i++){
-            modelMatrices[i] = new Matrix4f().translate((i % 8 - 5.5f) * 6f, -15, (i/10 +7f) * 6f)
+            modelMatrices[i] = new Matrix4f().translate((i % 8 - 5.5f) * 6f, -14.25f, (i/10 +7f) * 6f)
                     .rotate(110, 0f, 1f, 0f)
                     .scale(0.05f);
         }
@@ -420,13 +468,14 @@ public class ProjectOpenGL {
         }
         
         // create buffers with geometry
-        int[] buffers = new int[5];
+        int[] buffers = new int[6];
         glGenBuffers(buffers);
         sceneBuffer = buffers[0];
         ballerinaBuffer = buffers[1];
         seatBuffer = buffers[2];
         lCurtainBuffer = buffers[3];
         rCurtainBuffer = buffers[4];
+        cubeBuffer = buffers[5];
 
         // load and fill object data
         ballerina = new ObjLoader("/resources/models/ballerina.obj");
@@ -444,6 +493,11 @@ public class ProjectOpenGL {
             Logger.getLogger(ProjectOpenGL.class.getName()).log(Level.SEVERE, null, ex);
             System.exit(1);
         }
+        
+        
+        glBindBuffer(GL_ARRAY_BUFFER, cubeBuffer);
+        glBufferData(GL_ARRAY_BUFFER, CUBE, GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
         
         int length = 3 * 6 * lCurtain.getTriangleCount();
         FloatBuffer lCurtainData = BufferUtils.createFloatBuffer(length);
@@ -539,13 +593,14 @@ public class ProjectOpenGL {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // create a vertex array object for the geometry
-        int[] arrays = new int[5];
+        int[] arrays = new int[6];
         glGenVertexArrays(arrays);
         sceneArray = arrays[0];
         ballerinaArray = arrays[1];
         seatArray = arrays[2];
         lCurtainArray = arrays[3];
         rCurtainArray = arrays[4];
+        cubeArray = arrays[5];
 
         int positionAttribLoc;
 
@@ -590,6 +645,13 @@ public class ProjectOpenGL {
         glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, NORMAL_OFFSET);
         
         
+        glBindVertexArray(cubeArray);
+        glBindBuffer(GL_ARRAY_BUFFER, cubeBuffer);
+        glEnableVertexAttribArray(positionAttribLoc);
+        glVertexAttribPointer(positionAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, 0);
+        glEnableVertexAttribArray(normalAttribLoc);
+        glVertexAttribPointer(normalAttribLoc, 3, GL_FLOAT, false, SIZEOF_MODEL_VERTEX, NORMAL_OFFSET);
+        
         
         positionAttribLoc = glGetAttribLocation(seatProgram, "position");
         normalAttribLoc = glGetAttribLocation(seatProgram, "normal");
@@ -631,38 +693,40 @@ public class ProjectOpenGL {
                 .lookAt(camera.getEyePosition(), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0));
 
         //drawing curtains 
-        Material matCurtain = new Material(new Vector3f(0.33f, 0.22f, 0.03f), new Vector3f(0.78f, 0.57f, 0.11f), new Vector3f(0.99f, 0.94f, 0.81f), 27.90f);
-        /*if(t <1f){
-             drawModel(new Matrix4f().translate(0, 15, 0).scale(6f).scale(1f, -1f + t , 1f), view, projection, lCurtainArray, lCurtain.getTriangleCount() * 3, matCurtain);
-        }
-       
+        Material matCurtain = new Material(new Vector3f(0.33f, 0.22f, 0.03f), new Vector3f(0.4f, 0.11f, 0.1f), new Vector3f(0.4f, 0.2f, 0.2f), 27.90f);      
         if(t <1f){
-             drawModel(new Matrix4f().translate(0, 15, 0).scale(6f).scale(1f, -1f + t , 1f), view, projection, rCurtainArray, rCurtain.getTriangleCount() * 3, matCurtain);
-        }*/
-        
-        if(t <1f){
-             drawModelWithTex(new Matrix4f().translate(0, 15, 0).scale(6f).scale(1f, -1f + t , 1f), view, projection, lCurtainArray, 0, lCurtain.getTriangleCount() * 3, matCurtain, floorTexture, floorTexLoc);
+             drawModelWithTex(new Matrix4f().translate(0, 15, 0).scale(6f).scale(1f, -1f + t , 1f), view, projection, lCurtainArray, 0, lCurtain.getTriangleCount() * 3, null, floorTexture, floorTexLoc);
         }
        
         if(t <1f){
              drawModelWithTex(new Matrix4f().translate(0, 15, 0).scale(6f).scale(1f, -1f + t , 1f), view, projection, rCurtainArray, 0, rCurtain.getTriangleCount() * 3, matCurtain, floorTexture, floorTexLoc);
         }
         
+        //SmallCARPET
+        drawModelWithTex(new Matrix4f().translate(0, -15.01f, 35).scale(5f,0.2f, 18f), view, projection, cubeArray, 0, 36, null, floorTexture, floorTexLoc);
+        
+        //Main CARPET
+        drawModelWithTex(new Matrix4f().translate(0, -15, 35).scale(25f,0.2f, 18f), view, projection, cubeArray, 0, 36, null, floorTexture, floorTexLoc);
+        
+        //drawModelWithTex(new Matrix4f().translate(0, -15, 37).scale(30f,0.2f, 20f).rotate(90, 0f, 0f, 1f), view, projection, cubeArray, 0, 36, null, floorTexture, floorTexLoc);
+        
+        
+        
         //drawing SCENE 
         Material matScene = new Material(new Vector3f(0.25f), new Vector3f(0.15f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
-        //drawModel(new Matrix4f().translate(0, -15, 0).scale(6f), view, projection, sceneArray, scene.getTriangleCount() * 3, matScene);
+        drawModel(new Matrix4f().translate(0, -15, 0).scale(6f), view, projection, sceneArray, scene.getTriangleCount() * 3, matScene);
         // drawing seats
         drawSeats(new Matrix4f(), view, projection, seatArray, seat.getTriangleCount() * 3);
 
         //drawing ballerinas
         Material matBalCenter = new Material(new Vector3f(0.33f, 0.22f, 0.03f), new Vector3f(0.78f, 0.57f, 0.11f), new Vector3f(0.99f, 0.94f, 0.81f), 27.90f);
-        drawModel(new Matrix4f().translate(0, -5, -5).rotate(6*t, 0f, 1f, 0f), view.rotate(6*t, 0f, 1f, 0f), projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalCenter);
+        drawModel(new Matrix4f().translate(0, -5.25f, -5).rotate(6*t, 0f, 1f, 0f), view.rotate(6*t, 0f, 1f, 0f), projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalCenter);
 
         Material matBalLeft = new Material(new Vector3f(0.21f, 0.13f, 0.05f), new Vector3f(0.71f, 0.43f, 0.18f), new Vector3f(0.39f, 0.27f, 0.17f), 25.6f);
-        drawModel(new Matrix4f().translate(-5, -5, 0).rotate(-30, 0f, 1f, 0f).rotate(6*t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalLeft);
+        drawModel(new Matrix4f().translate(-5, -5.25f, 0).rotate(-30, 0f, 1f, 0f).rotate(6*t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalLeft);
 
         Material matBalRight = new Material(new Vector3f(0.25f), new Vector3f(0.4f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
-        drawModel(new Matrix4f().translate(5, -5, 0).rotate(30, 0f, 1f, 0f).rotate(6*t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalRight);
+        drawModel(new Matrix4f().translate(5, -5.25f, 0).rotate(30, 0f, 1f, 0f).rotate(6*t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalRight);
         
         
         
@@ -738,10 +802,10 @@ public class ProjectOpenGL {
         glUseProgram(texMProgram);
         glBindVertexArray(vao); // bind vertex array to draw
 
-        glUniform4f(texMLightPositionLoc, 0f, 5f, 42f, 1);
+        glUniform4f(texMLightPositionLoc, 0f, 5f, -5f, 1);
         glUniform3f(texMLightAmbientColorLoc, 0.3f, 0.3f, 0.3f);
         glUniform3f(texMLightDiffuseColorLoc, 1, 1, 1);
-        glUniform3f(texMLightSpecularColorLoc, 1, 1, 1);
+        glUniform3f(texMLightSpecularColorLoc, 0.6f, 0.6f, 0.6f);
 
         glUniform3f(texMEyePositionLoc, camera.getEyePosition().x, camera.getEyePosition().y, camera.getEyePosition().z);
 

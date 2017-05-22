@@ -19,7 +19,7 @@ void main() {
 
     //can transform the texcoord from range [0.0, 1.0] to [-2.0, 2.0], by multiplication and addition
 
-    vTexCoord = texcoord ;
+    vTexCoord = texcoord;
 
     gl_Position = MVP * vec4(position, 1.0);
 }

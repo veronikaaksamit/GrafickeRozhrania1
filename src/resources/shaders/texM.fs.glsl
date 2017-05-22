@@ -27,9 +27,9 @@ void main() {
     
     vec3 mixColor = texture(floorTex, vTexCoord).rgb;
 
-    vec3 color = phong(materialAmbientColor, materialDiffuseColor, materialSpecularColor, materialShininess);
+    vec3 color = phong(mixColor, mixColor, materialSpecularColor, materialShininess);
 // (opacity) from 100% to 40% (range is 0.0-1.0)
-    fragColor = vec4(color, 0.1);
+    fragColor = vec4(color*0.7, 1);
 }
 
 /*
