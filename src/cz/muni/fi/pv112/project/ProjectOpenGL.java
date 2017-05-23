@@ -101,6 +101,7 @@ public class ProjectOpenGL {
     private int carpetTexture;
     private int sceneTexture;
     private int wallTexture;
+    private int porcelainTexture;
     //</editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="TEXTURE LOCATIONS">
@@ -365,6 +366,7 @@ public class ProjectOpenGL {
             sceneTexture = loadTexture("/resources/textures/flies3.jpg");
             curtainTexture = loadTexture("/resources/textures/curtains.jpg");
             wallTexture = loadTexture("/resources/textures/wall.jpg");
+            porcelainTexture = loadTexture("/resources/textures/porcelain.jpg");
             
         } catch (IOException ex) {
             Logger.getLogger(ProjectOpenGL.class.getName()).log(Level.SEVERE, null, ex);
@@ -457,7 +459,7 @@ public class ProjectOpenGL {
         }
        
         for(int i=0; i< NUMBER_OF_INSTANCES; i++){
-            seatColors[i] = new Vector4f(1f, 0f, 0f, 1f);
+            seatColors[i] = new Vector4f(1f, 1f, 1f, 1f);
             
         }
         
@@ -519,28 +521,7 @@ public class ProjectOpenGL {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         //</editor-fold>
         
-        // <editor-fold defaultstate="collapsed" desc="VASE Binding data to buffer">
-        length = 3 * 8 * vase.getTriangleCount();
-        FloatBuffer vaseData = BufferUtils.createFloatBuffer(length);
-        for (int f = 0; f < this.vase.getTriangleCount(); f++) {
-            int[] pi = this.vase.getVertexIndices().get(f);
-            int[] ni = this.vase.getNormalIndices().get(f);
-            int[] ti = this.vase.getTexcoordIndices().get(f);
-            for (int i = 0; i < 3; i++) {
-                float[] position = this.vase.getVertices().get(pi[i]);
-                float[] normal = this.vase.getNormals().get(ni[i]);
-                float[] texCoord = this.vase.getTexcoords().get(ti[i]);
-                vaseData.put(position);
-                vaseData.put(normal);
-                vaseData.put(texCoord);
-            }
-        }
-        vaseData.rewind();
-        glBindBuffer(GL_ARRAY_BUFFER, vaseBuffer);
-        glBufferData(GL_ARRAY_BUFFER, vaseData, GL_STATIC_DRAW);
-        // clear buffer binding
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        //</editor-fold>
+        
         
         // <editor-fold defaultstate="collapsed" desc="RIGHT CURTAIN Binding data to buffer">
         length = 3 * 8 * rCurtain.getTriangleCount();
@@ -584,6 +565,29 @@ public class ProjectOpenGL {
         // clear buffer binding
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         // </editor-fold>
+        
+        // <editor-fold defaultstate="collapsed" desc="VASE Binding data to buffer">
+        length = 3 * 8 * vase.getTriangleCount();
+        FloatBuffer vaseData = BufferUtils.createFloatBuffer(length);
+        for (int f = 0; f < this.vase.getTriangleCount(); f++) {
+            int[] pi = this.vase.getVertexIndices().get(f);
+            int[] ni = this.vase.getNormalIndices().get(f);
+            int[] ti = this.vase.getTexcoordIndices().get(f);
+            for (int i = 0; i < 3; i++) {
+                float[] position = this.vase.getVertices().get(pi[i]);
+                float[] normal = this.vase.getNormals().get(ni[i]);
+                float[] texCoord = this.vase.getTexcoords().get(ti[i]);
+                vaseData.put(position);
+                vaseData.put(normal);
+                vaseData.put(texCoord);
+            }
+        }
+        vaseData.rewind();
+        glBindBuffer(GL_ARRAY_BUFFER, vaseBuffer);
+        glBufferData(GL_ARRAY_BUFFER, vaseData, GL_STATIC_DRAW);
+        // clear buffer binding
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        //</editor-fold>
         
         // <editor-fold defaultstate="collapsed" desc="SCENE Binding data to buffer">
         length = 3 * 8 * scene.getTriangleCount();
@@ -736,7 +740,7 @@ public class ProjectOpenGL {
 
         // animate variables
         if (animate) {
-            t += 0.002f;
+            t += 0.02f;
         }
 
         glPolygonMode(GL_FRONT_AND_BACK, mode);
@@ -750,17 +754,14 @@ public class ProjectOpenGL {
                 .lookAt(camera.getEyePosition(), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0));
 
         
-        
-        
-        
         //drawing curtains 
         Material matCurtain = new Material(new Vector3f(0.33f, 0.22f, 0.03f), new Vector3f(0.4f, 0.11f, 0.1f), new Vector3f(0.4f, 0.2f, 0.2f), 27.90f);      
         if(t <1f){
-             drawModelWithTex(new Matrix4f().translate(0, 15, 0).scale(6f).scale(1f, -1f + t , 1f), view, projection, lCurtainArray, 0, lCurtain.getTriangleCount() * 3, null, curtainTexture);
+             drawModelWithTex(new Matrix4f().translate(-1, 16, 0).scale(6.2f).scale(1f, -1f + t , 1f), view, projection, lCurtainArray, 0, lCurtain.getTriangleCount() * 3, null, curtainTexture);
         }
        
         if(t <1f){
-             drawModelWithTex(new Matrix4f().translate(0, 15, 0).scale(6f).scale(1f, -1f + t , 1f), view, projection, rCurtainArray, 0, rCurtain.getTriangleCount() * 3, matCurtain, curtainTexture);
+             drawModelWithTex(new Matrix4f().translate(0, 16, 0).scale(6.2f).scale(1f, -1f + t , 1f), view, projection, rCurtainArray, 0, rCurtain.getTriangleCount() * 3, matCurtain, curtainTexture);
         }
         
         //SmallCARPET
@@ -783,15 +784,17 @@ public class ProjectOpenGL {
         drawModelWithTex(new Matrix4f().translate(0, 35, 18).rotate((float)Math.toRadians(90), 1f, 0f, 0f).scale(30f, 30f, 1f), view, projection, quadArray, 0, 6, null, wallTexture);
         
         //left vase
-        drawModel(new Matrix4f().translate(-21, -10, 14).scale(2f), view, projection, vaseArray, vase.getTriangleCount() * 3, null, 1);
-        
+        drawModelWithTex(new Matrix4f().translate(-21, -10, 14).scale(2f), view, projection, vaseArray, 0, vase.getTriangleCount() * 3, null, porcelainTexture);
         //right vase
-        drawModel(new Matrix4f().translate(21, -10, 14).scale(2f), view, projection, vaseArray, vase.getTriangleCount() * 3, null, 1);
+        drawModelWithTex(new Matrix4f().translate(21, -10, 14).scale(2f), view, projection, vaseArray, 0, vase.getTriangleCount() * 3, null, porcelainTexture);
         
         
         //drawing SCENE 
         //Material matScene = new Material(new Vector3f(0.25f), new Vector3f(0.15f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
         drawModelWithTex(new Matrix4f().translate(0, -15, 0).scale(6f), view, projection, sceneArray, 0, scene.getTriangleCount() * 3, null, sceneTexture);
+        
+        
+
         // drawing seats
         drawSeats(new Matrix4f(), view, projection, seatArray, seat.getTriangleCount() * 3);
 
@@ -800,7 +803,7 @@ public class ProjectOpenGL {
         drawModel(new Matrix4f().translate(0, -5.25f, -5).rotate(6*t, 0f, 1f, 0f), view.rotate(6*t, 0f, 1f, 0f), projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalCenter,0);
 
         Material matBalLeft = new Material(new Vector3f(0.21f, 0.13f, 0.05f), new Vector3f(0.71f, 0.43f, 0.18f), new Vector3f(0.39f, 0.27f, 0.17f), 25.6f);
-        drawModel(new Matrix4f().translate(-5, -5.25f, 0).rotate(-30, 0f, 1f, 0f).rotate(6*t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalLeft, 0);
+        drawModel(new Matrix4f().translate(-5, -5.25f, 0).rotate(-30, 0f, 1f, 0f).rotate(6*t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalLeft, 1);
 
         Material matBalRight = new Material(new Vector3f(0.25f), new Vector3f(0.4f), new Vector3f(0.26f, 0.14f, 0.09f), 12.8f);
         drawModel(new Matrix4f().translate(5, -5.25f, 0).rotate(30, 0f, 1f, 0f).rotate(6*t, 0f, 1f, 0f), view, projection, ballerinaArray, ballerina.getTriangleCount() * 3, matBalRight, 0);
