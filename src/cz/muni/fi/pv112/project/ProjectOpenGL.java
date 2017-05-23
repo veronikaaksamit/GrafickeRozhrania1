@@ -362,7 +362,7 @@ public class ProjectOpenGL {
             texMProgram = loadProgram("/resources/shaders/texM.vs.glsl",
                     "/resources/shaders/texM.fs.glsl");
             floorTexture = loadTexture("/resources/textures/carpet3.jpg");
-            carpetTexture = loadTexture("/resources/textures/gold.jpg");
+            carpetTexture = loadTexture("/resources/textures/cream.jpg");
             sceneTexture = loadTexture("/resources/textures/flies3.jpg");
             curtainTexture = loadTexture("/resources/textures/curtains.jpg");
             wallTexture = loadTexture("/resources/textures/wall.jpg");
@@ -884,7 +884,7 @@ public class ProjectOpenGL {
         
         glUniform1f(repeatTextureLoc, 10);
 
-        glUniform4f(texMLightPositionLoc, 0f, 5f, -5f, 1);
+        glUniform4f(texMLightPositionLoc, 0f, 10f, 20f, 1);
         glUniform3f(texMLightAmbientColorLoc, 0.3f, 0.3f, 0.3f);
         glUniform3f(texMLightDiffuseColorLoc, 1, 1, 1);
         glUniform3f(texMLightSpecularColorLoc, 0.6f, 0.6f, 0.6f);
