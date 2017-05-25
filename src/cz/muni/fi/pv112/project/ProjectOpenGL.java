@@ -884,7 +884,7 @@ public class ProjectOpenGL {
         
         glUniform1f(repeatTextureLoc, 10);
 
-        glUniform4f(texMLightPositionLoc, 0f, 10f, 20f, 1);
+        glUniform4f(texMLightPositionLoc, 0f, 10f, 10f, 1);
         glUniform3f(texMLightAmbientColorLoc, 0.3f, 0.3f, 0.3f);
         glUniform3f(texMLightDiffuseColorLoc, 1, 1, 1);
         glUniform3f(texMLightSpecularColorLoc, 0.6f, 0.6f, 0.6f);
